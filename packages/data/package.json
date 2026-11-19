@@ -1,0 +1,23 @@
+{
+  "name": "@northnectar/data",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Data access layer. UI code depends only on the repository interface, never on the storage behind it.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@northnectar/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@northnectar/config": "workspace:*",
+    "eslint": "9.39.5",
+    "typescript": "6.0.3"
+  }
+}

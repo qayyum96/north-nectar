@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@import "@northnectar/config/tailwind/theme.css";
+
+/* Workspace packages live under node_modules symlinks, which Tailwind skips by default. */
+@source "../../../packages/ui/src";
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 6.5rem;
+    color-scheme: light;
+  }
+
+  /* Lock page scroll while a modal dialog (cart drawer, mobile menu) is open. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
+  body {
+    @apply bg-page font-sans text-base text-ink antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* One consistent, high-contrast focus ring. Dark sections switch it to gold via .on-dark. */
+  :focus-visible {
+    outline: 3px solid var(--focus-ring, var(--color-forest-600));
+    outline-offset: 3px;
+  }
+
+  .on-dark {
+    --focus-ring: var(--color-gold-300);
+  }
+
+  input,
+  select,
+  textarea {
+    outline-offset: 1px;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  ::selection {
+    background: var(--color-forest-600);
+    color: #fff;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Display headings: Oswald, uppercase, tight. */
+  .heading-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--color-forest-900);
+    text-wrap: balance;
+  }
+}
