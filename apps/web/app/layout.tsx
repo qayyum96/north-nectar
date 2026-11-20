@@ -4,8 +4,9 @@ import type { ReactNode } from "react";
 import { JsonLd } from "@/components/seo/json-ld";
 import { CartDrawer } from "@/features/cart/cart-drawer";
 import { CartProvider } from "@/features/cart/cart-provider";
+import { getVariantCatalog } from "@/lib/commerce/get-variant-catalog";
 import { isIndexable } from "@/lib/env";
-import { getQuickLinks } from "@/lib/navigation";
+import { getCartSuggestions, getQuickLinks } from "@/lib/navigation";
 import { siteConfig } from "@/lib/seo/config";
 import { graphJsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
 import "./globals.css";
@@ -54,6 +55,12 @@ export const metadata: Metadata = {
     : { index: false, follow: false },
 };
 
+/**
+ * Every page embeds live catalogue prices for the cart (CartProvider), so all pages refresh hourly
+ * like the catalogue pages do. The order Server Action re-prices from the data layer regardless.
+ */
+export const revalidate = 3600;
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -61,14 +68,18 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const quickLinks = await getQuickLinks();
+  const [quickLinks, suggestions, variantCatalog] = await Promise.all([
+    getQuickLinks(),
+    getCartSuggestions(),
+    getVariantCatalog(),
+  ]);
 
   return (
     <html lang={siteConfig.locale} className={`${figtree.variable} ${oswald.variable}`}>
       <body>
         {children}
-        <CartDrawer quickLinks={quickLinks} />
-        <CartProvider />
+        <CartDrawer quickLinks={quickLinks} suggestions={suggestions} />
+        <CartProvider catalog={variantCatalog} />
         <JsonLd data={graphJsonLd(organizationJsonLd(), websiteJsonLd())} />
       </body>
     </html>

@@ -104,6 +104,30 @@ JazzCash/Easypaisa. Card (Stripe or a local gateway) is configured but `hidden`.
 drawer badges are generated from enabled methods only, so a new gateway's badges appear the moment
 it is enabled.
 
+**Before launch:** fill in the bank details (`paymentInstructions.bank`: bank name and IBAN) in the
+same file. They are shown at checkout and on the order confirmation.
+
+### Orders (current flow)
+
+Checkout is a guest flow. The order Server Action
+([`features/checkout/actions.ts`](apps/web/features/checkout/actions.ts)) validates the details with
+Zod, re-prices every line from the data layer, checks stock, applies delivery, payment fee and
+discount rules (`computeTotals`, shared with the cart) and refuses the order if the total changed.
+No payment gateway is connected: cash on delivery, bank transfer and JazzCash/Easypaisa are settled
+outside the site (wallet payments are arranged on WhatsApp after the order).
+
+Until Supabase and email are connected, **orders are only written to the server log**
+(`[order] placed`), and the confirmation page reads the order from a one-day, HttpOnly cookie.
+`TODO(supabase)` / `TODO(email)` comments mark where to store orders, decrement stock and send
+receipts. Discount codes are supported end to end but none exist yet (`discountCodes`).
+
+### Policy pages
+
+Privacy, Terms, Refund and Return, and Shipping live in
+[`apps/web/content/policies/`](apps/web/content/policies/), one file each, with placeholder text
+marked `status: "draft"`. Drafts show a notice, are `noindex` and stay out of the sitemap. Replace
+the text and set `status: "final"` to publish one.
+
 ## Social links
 
 Set the profile URLs in `siteConfig.social` ([`apps/web/lib/seo/config.ts`](apps/web/lib/seo/config.ts)).
@@ -136,6 +160,6 @@ UI code only talks to the `CatalogRepository` interface
 | 1     | Monorepo, tooling, tokens, UI primitives, layout, SEO foundation                                          | done   |
 | 2     | Data layer + Home page                                                                                    | done   |
 | 3     | Shop, category and product pages                                                                          | done   |
-| 4     | About and Contact                                                                                         | next   |
-| 5     | Cart, checkout, confirmation + Privacy, Terms, Refund & Return and Shipping policy pages (draft, noindex) |        |
-| 6     | SEO and performance audit                                                                                 |        |
+| 4     | About and Contact                                                                                         | done   |
+| 5     | Cart, checkout, confirmation + Privacy, Terms, Refund & Return and Shipping policy pages (draft, noindex) | done   |
+| 6     | SEO and performance audit                                                                                 | next   |

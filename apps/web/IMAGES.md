@@ -1,8 +1,30 @@
 # Images
 
-All current files are **placeholders taken from the approved mockup**. To replace one, export the
-final image at the recommended size and overwrite the file with **the same name and path**. No code
-changes are needed.
+To replace an image, export the final file at the recommended size and overwrite the file with
+**the same name and path**. No code changes are needed (if the size changes, update its width and
+height where it is referenced).
+
+## Status (November 2026)
+
+Real photos from `north-nectar-images/` (the folder supplied by the client) are now in use:
+
+| Site file                                                                                             | Source                                                       |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `products/product-sea-buckthorn-berries.webp` (600×600)                                               | `northnectar-premium-dried-sea-buckthorn-berries-*`          |
+| `products/product-white-apricot.webp` (600×600)                                                       | `premium-white-apricot-safed-…-*`                            |
+| `products/product-mulethi-roots.webp`, `-sanghuang-mushroom`, `-walnut-kernels`, `-ephedra` (600×600) | matching `northnectar-premium-…` / `premium-ephedra-…` files |
+| `home/hero-valley-flatlay.webp` (567×658)                                                             | `vidoe-img.webp`                                             |
+| `categories/category-pure-honey.webp`, `category-natural-oils.webp` (220×220)                         | `pure-honey-370x220.webp`, `natural-oil-blog-370x220.webp`   |
+
+The product squares were rebuilt from the supplied 600×500 crop (sharp centre) and the 300×300
+square (top and bottom strips), so the full square composition is kept.
+
+**Still from the mockup, waiting for real files:** the wild thyme tea photos, shilajit, salab
+misri, salab panja and dried apricot packshots, the home "showcase" cut-outs (transparent PNG/WebP
+of the pouches), the harvest basket photo, the story video poster, and real sourcing photos for the
+About page. The supplied 140×100 category icons are too small for the 134px category circles
+(export at least 300×300). For crisp images on high-density phones, export packshots at
+**1200×1200** if larger originals exist.
 
 - Static layout and section images are mapped in [`lib/images.ts`](lib/images.ts) (one place).
 - Product and category images are referenced from the data layer (`packages/data`, Phase 2) using

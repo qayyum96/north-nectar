@@ -56,7 +56,7 @@ export function CartButton({ variant }: { variant: "desktop" | "mobile" }) {
       <span
         aria-hidden="true"
         className={cn(
-          "h-[22px] min-w-[22px] rounded-full bg-kraft px-[6px] text-center text-[14px] leading-[22px] font-bold text-ink tabular-nums",
+          "h-[22px] min-w-[22px] rounded-full bg-kraft px-[6px] text-center text-[14px] leading-[22px] font-bold text-ink",
           !hydrated && "opacity-0",
         )}
       >

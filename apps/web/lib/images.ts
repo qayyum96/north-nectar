@@ -72,8 +72,8 @@ export const images = {
     ),
     valleyFlatlay: img(
       "/images/home/hero-valley-flatlay.webp",
-      1400,
-      1584,
+      567,
+      658,
       "Himalayan dry fruits, honey and herbs laid out from above",
     ),
     storyVideoPoster: img(
@@ -101,17 +101,56 @@ export const images = {
       "Himalayan Shilajit Resin jar",
     ),
   },
+  /** /about (Our story). Currently reuse home and product photos; replace with sourcing photos. */
+  about: {
+    heroBasket: img(
+      "/images/home/hero-himalayan-harvest-basket.webp",
+      2160,
+      836,
+      "Basket of Himalayan roots, herbs, honeycomb and dried apricots",
+    ),
+    heroFlatlay: img(
+      "/images/home/hero-valley-flatlay.webp",
+      567,
+      658,
+      "Himalayan dry fruits, honey and herbs from above",
+    ),
+    stepGathered: img(
+      "/images/home/hero-himalayan-harvest-basket.webp",
+      2160,
+      836,
+      "Basket of freshly gathered herbs and roots",
+    ),
+    stepDried: img(
+      "/images/products/product-sea-buckthorn-berries.webp",
+      600,
+      600,
+      "Dried sea buckthorn berries",
+    ),
+    stepSelected: img(
+      "/images/products/product-dried-apricots.webp",
+      608,
+      608,
+      "Selected dried apricots",
+    ),
+    stepPacked: img(
+      "/images/products/product-sea-buckthorn-label-front.webp",
+      1400,
+      1310,
+      "North Nectar label",
+    ),
+  },
   categories: {
     pureHoney: img(
       "/images/categories/category-pure-honey.webp",
-      600,
-      600,
+      220,
+      220,
       "Jars of pure Himalayan honey",
     ),
     naturalOils: img(
       "/images/categories/category-natural-oils.webp",
-      600,
-      600,
+      220,
+      220,
       "Bottles of natural cold-pressed oils",
     ),
   },

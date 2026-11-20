@@ -7,7 +7,11 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
-    scroll-padding-top: 6.5rem;
+    /* Clears the sticky header (taller on phones, where it includes the search row). */
+    scroll-padding-top: 11rem;
+    @media (width >= 48rem) {
+      scroll-padding-top: 9rem;
+    }
     color-scheme: light;
   }
 

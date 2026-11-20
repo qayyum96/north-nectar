@@ -6,7 +6,7 @@ import { footerCopy } from "@/content/site";
 import { paymentBadges } from "@/lib/constants/commerce";
 import { images } from "@/lib/images";
 import { getFooterShopLinks } from "@/lib/navigation";
-import { footerCompanyLinks, footerHelpLinks, type NavLink } from "@/lib/routes";
+import { footerCompanyLinks, footerHelpLinks, footerLegalLinks, type NavLink } from "@/lib/routes";
 import { activeSocialLinks, siteConfig, type SocialId } from "@/lib/seo/config";
 import { NewsletterBand } from "./newsletter-band";
 
@@ -127,6 +127,17 @@ export async function SiteFooter({ newsletter }: { newsletter: "light" | "dark" 
           <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#2f5238] pt-6">
             <p className="m-0 text-[14px] leading-[21px] text-[#b7a987]">
               {footerCopy.copyright(year)}
+              {footerLegalLinks.map((link) => (
+                <span key={link.href}>
+                  {" · "}
+                  <Link
+                    href={link.href}
+                    className="relative before:absolute before:inset-x-0 before:-inset-y-3 before:content-[''] hover:text-[#efe2c4] hover:underline"
+                  >
+                    {link.label}
+                  </Link>
+                </span>
+              ))}
             </p>
             <ul className="m-0 flex list-none flex-wrap gap-2 p-0" aria-label="Payment methods">
               {paymentBadges().map((badge) => (

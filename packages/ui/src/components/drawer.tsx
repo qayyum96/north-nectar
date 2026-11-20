@@ -14,6 +14,10 @@ export interface DrawerProps {
   footer?: ReactNode;
   className?: string;
   closeLabel?: string;
+  /** Rendered between the header and the scrolling body (stays in place while the body scrolls). */
+  beforeBody?: ReactNode;
+  /** Per-part class overrides, merged with the defaults. */
+  classNames?: Partial<Record<"header" | "title" | "close" | "body" | "footer", string>>;
 }
 
 /**
@@ -30,6 +34,8 @@ export function Drawer({
   footer,
   className,
   closeLabel = "Close",
+  beforeBody,
+  classNames = {},
 }: DrawerProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -66,24 +72,42 @@ export function Drawer({
       )}
     >
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between gap-4 border-b border-line bg-white px-5 py-4">
+        <div
+          className={cn(
+            "flex items-center justify-between gap-4 border-b border-line bg-white px-5 py-4",
+            classNames.header,
+          )}
+        >
           <h2
             id={titleId}
-            className="font-display text-display-sm font-bold text-forest-900 uppercase"
+            className={cn(
+              "font-display text-display-sm font-bold text-forest-900 uppercase",
+              classNames.title,
+            )}
           >
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="grid size-11 cursor-pointer place-items-center rounded-full bg-sand-200 text-ink transition-colors hover:bg-sand-300"
+            className={cn(
+              "grid size-11 shrink-0 cursor-pointer place-items-center rounded-full bg-sand-200 text-ink transition-colors hover:bg-sand-300",
+              classNames.close,
+            )}
             aria-label={closeLabel}
           >
             <CloseIcon size={20} />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto overscroll-contain">{children}</div>
-        {footer ? <div className="border-t border-line bg-white px-5 py-4">{footer}</div> : null}
+        {beforeBody}
+        <div className={cn("flex-1 overflow-y-auto overscroll-contain", classNames.body)}>
+          {children}
+        </div>
+        {footer ? (
+          <div className={cn("border-t border-line bg-white px-5 py-4", classNames.footer)}>
+            {footer}
+          </div>
+        ) : null}
       </div>
     </dialog>
   );

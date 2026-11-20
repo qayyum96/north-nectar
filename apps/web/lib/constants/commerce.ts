@@ -54,6 +54,8 @@ export const deliveryMethods: DeliveryMethod[] = [
     description: "3 to 5 working days, all of Pakistan",
     price: 250,
     freeOverThreshold: true,
+    transitDays: [3, 5],
+    shortLabel: "Standard",
   },
   {
     id: "express",
@@ -61,6 +63,8 @@ export const deliveryMethods: DeliveryMethod[] = [
     description: "1 to 2 working days, major cities",
     price: 450,
     freeOverThreshold: false,
+    transitDays: [1, 2],
+    shortLabel: "Express",
   },
 ];
 
@@ -97,3 +101,90 @@ export function deliveryFee(subtotal: number, methodId: DeliveryMethod["id"] = "
   if (method.freeOverThreshold && subtotal >= commerceConfig.freeDeliveryThreshold) return 0;
   return method.price;
 }
+
+/* ------------------------------------------------------------------------------------------------
+ * Discount codes
+ * ---------------------------------------------------------------------------------------------- */
+
+export interface DiscountCode {
+  /** What the customer types (matched case-insensitively). */
+  code: string;
+  type: "percent" | "fixed";
+  /** Percentage (1 to 100) or a fixed amount in PKR. */
+  value: number;
+  /** Optional minimum subtotal for the code to apply. */
+  minSubtotal?: number;
+}
+
+/**
+ * Active discount codes. Empty for now, so the cart reports every code as invalid. Add entries here
+ * (or move them to Supabase) and the cart, checkout and server totals pick them up automatically.
+ */
+export const discountCodes: DiscountCode[] = [];
+
+export function findDiscountCode(code: string | null | undefined): DiscountCode | null {
+  const wanted = code?.trim().toUpperCase();
+  if (!wanted) return null;
+  return discountCodes.find((d) => d.code.toUpperCase() === wanted) ?? null;
+}
+
+/** Discount for a subtotal, or 0 when the code is unknown or its minimum isn't met. */
+export function discountAmount(code: string | null | undefined, subtotal: number): number {
+  const discount = findDiscountCode(code);
+  if (!discount || subtotal < (discount.minSubtotal ?? 0)) return 0;
+  const raw =
+    discount.type === "percent" ? Math.round((subtotal * discount.value) / 100) : discount.value;
+  return Math.min(subtotal, Math.max(0, raw));
+}
+
+/* ------------------------------------------------------------------------------------------------
+ * Totals (shared by the cart, checkout and the order Server Action, so they always agree)
+ * ---------------------------------------------------------------------------------------------- */
+
+export interface Totals {
+  subtotal: number;
+  discount: number;
+  delivery: number;
+  paymentFee: number;
+  total: number;
+}
+
+export function computeTotals({
+  subtotal,
+  deliveryMethodId = "standard",
+  paymentMethodId = "cod",
+  discountCode,
+}: {
+  subtotal: number;
+  deliveryMethodId?: DeliveryMethod["id"];
+  paymentMethodId?: PaymentMethod["id"];
+  discountCode?: string | null;
+}): Totals {
+  const discount = discountAmount(discountCode, subtotal);
+  const afterDiscount = subtotal - discount;
+  const delivery = deliveryFee(afterDiscount, deliveryMethodId);
+  const paymentFee =
+    subtotal > 0 ? (paymentMethods.find((m) => m.id === paymentMethodId)?.fee ?? 0) : 0;
+  return { subtotal, discount, delivery, paymentFee, total: afterDiscount + delivery + paymentFee };
+}
+
+/* ------------------------------------------------------------------------------------------------
+ * Payment instructions shown at checkout and on the order confirmation
+ * ---------------------------------------------------------------------------------------------- */
+
+/**
+ * TODO(client): replace the bracketed placeholders with the real bank and wallet details before
+ * launch. They appear at checkout (Bank transfer) and on the order confirmation page.
+ */
+export const paymentInstructions = {
+  bank: {
+    bankName: "[Bank name]",
+    accountTitle: "North Nectar",
+    iban: "[Your IBAN]",
+  },
+  /** Mobile wallets offered under "JazzCash or Easypaisa". */
+  wallets: [
+    { id: "jazzcash", label: "JazzCash" },
+    { id: "easypaisa", label: "Easypaisa" },
+  ] as const,
+};

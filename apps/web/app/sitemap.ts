@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { policies } from "@/content/policies";
 import { catalog } from "@/lib/catalog";
 import { categoryPath, productPath } from "@/lib/routes";
 import { absoluteUrl } from "@/lib/seo/config";
@@ -61,5 +62,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
     entry("/about", 0.6, "monthly"),
     entry("/contact", 0.6, "monthly"),
+    // Policies join the sitemap once their text is final (drafts are noindex).
+    ...policies
+      .filter((p) => p.status === "final")
+      .map((p) => entry(p.path, 0.3, "yearly", { lastModified: p.lastUpdated })),
   ];
 }

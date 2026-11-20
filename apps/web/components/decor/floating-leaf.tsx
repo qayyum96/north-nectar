@@ -10,6 +10,7 @@ import type { CSSProperties } from "react";
 export function FloatingLeaf({
   image,
   className,
+  imageClassName,
   rotate = 0,
   delay = 0,
   duration = 4.2,
@@ -17,6 +18,8 @@ export function FloatingLeaf({
 }: {
   image: ImageAsset;
   className?: string;
+  /** Extra classes for the image (e.g. a different drop shadow). */
+  imageClassName?: string;
   rotate?: number;
   /** Seconds. Negative values start mid-animation so leaves don't move in sync. */
   delay?: number;
@@ -45,7 +48,10 @@ export function FloatingLeaf({
         alt=""
         sizes={`${width}px`}
         style={imageStyle}
-        className="h-auto w-full animate-leaf-float drop-shadow-[0_14px_16px_rgba(30,60,20,0.22)]"
+        className={cn(
+          "h-auto w-full animate-leaf-float drop-shadow-[0_14px_16px_rgba(30,60,20,0.22)]",
+          imageClassName,
+        )}
       />
     </span>
   );

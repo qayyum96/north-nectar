@@ -1,4 +1,6 @@
+import { getDefaultVariant } from "@northnectar/data/utils";
 import { catalog } from "@/lib/catalog";
+import type { CartSuggestion } from "@/features/cart/cart-suggestion";
 import { categoryPath, productPath, type NavGroup, type NavLink } from "@/lib/routes";
 
 /**
@@ -35,5 +37,33 @@ export async function getFooterShopLinks(): Promise<NavLink[]> {
 /** Product shortcuts shown in the empty cart drawer. */
 export async function getQuickLinks(limit = 4): Promise<NavLink[]> {
   const products = await catalog.getProducts({ sort: "best-selling", limit });
-  return products.map((p) => ({ label: p.name, href: productPath(p.slug) }));
+  return products.map((p) => ({ label: p.shortName ?? p.name, href: productPath(p.slug) }));
+}
+
+/**
+ * "Pairs well" suggestions for the cart drawer: best sellers with their default size. The drawer
+ * shows the first one that isn't already in the cart.
+ */
+export async function getCartSuggestions(limit = 4): Promise<CartSuggestion[]> {
+  const products = await catalog.getProducts({ sort: "best-selling" });
+  return products
+    .filter((p) => p.purchaseMode === "retail")
+    .flatMap((p) => {
+      const variant = getDefaultVariant(p);
+      if (!variant || variant.stock <= 0) return [];
+      const image = p.images[0];
+      return [
+        {
+          productId: p.id,
+          variantId: variant.id,
+          slug: p.slug,
+          name: p.name,
+          shortName: p.shortName ?? p.name,
+          variantLabel: variant.label,
+          price: variant.price,
+          image: { src: image?.src ?? "", alt: image?.alt ?? p.name },
+        },
+      ];
+    })
+    .slice(0, limit);
 }

@@ -53,6 +53,7 @@ const hunzaWildThymeTea: Product = {
   slug: "hunza-wild-thyme-tea",
   status: "active",
   name: "Hunza Herbal Tea, Wild Thyme (Tumuro)",
+  shortName: "Wild Thyme Tea",
   tagline: "Pure Himalayan herbal infusion.",
   description: [
     "A gentle, aromatic herbal infusion of wild thyme, known in the valley as tumuro, picked by hand on the slopes of Hunza. Naturally caffeine-free and lovely after a meal.",
@@ -134,6 +135,7 @@ const driedSeaBuckthornBerries: Product = {
   slug: "dried-sea-buckthorn-berries",
   status: "active",
   name: "Premium Dried Sea Buckthorn Berries",
+  shortName: "Sea Buckthorn",
   tagline: "Tangy Himalayan superfood, carefully dried.",
   description: [
     "Tangy, bright berries carefully selected and dried in the mountains of Gilgit-Baltistan. Lovely in herbal teas, fruit blends and breakfast bowls.",
@@ -153,6 +155,8 @@ const driedSeaBuckthornBerries: Product = {
     productImage(
       "product-sea-buckthorn-berries.webp",
       "North Nectar Dried Sea Buckthorn Berries pouch with a bowl of berries",
+      600,
+      600,
     ),
     {
       src: "/images/home/showcase-sea-buckthorn.webp",
@@ -317,6 +321,8 @@ const drafts: Product[] = [
     image: productImage(
       "product-sanghuang-mushroom.webp",
       "Wild Sanghuang mushroom in a wooden bowl",
+      600,
+      600,
     ),
     variants: [
       weight("var-sanghuang-100g", "NN-SGH-100", 100, 26000, {
@@ -334,7 +340,12 @@ const drafts: Product[] = [
     tagline: "Sun-dried Himalayan licorice root.",
     categoryId: "cat-herbal-roots",
     botanicalName: "Glycyrrhiza glabra",
-    image: productImage("product-mulethi-roots.webp", "Mulethi licorice roots in a cloth sack"),
+    image: productImage(
+      "product-mulethi-roots.webp",
+      "Mulethi licorice roots in a cloth sack",
+      600,
+      600,
+    ),
     variants: [
       weight("var-mulethi-250g", "NN-MUL-250", 250, 750, { compareAtPrice: 850, isDefault: true }),
     ],
@@ -350,6 +361,8 @@ const drafts: Product[] = [
     image: productImage(
       "product-white-apricot.webp",
       "White Apricot pouch with a bowl of apricots",
+      600,
+      600,
     ),
     variants: [
       weight("var-white-apricot-250g", "NN-WAP-250", 250, 700, { isDefault: true }),
@@ -380,7 +393,12 @@ const drafts: Product[] = [
     name: "Walnut Kernels",
     tagline: "Export-quality kernels, retail and bulk.",
     categoryId: "cat-dry-fruits",
-    image: productImage("product-walnut-kernels.webp", "Retail and wholesale walnut kernel packs"),
+    image: productImage(
+      "product-walnut-kernels.webp",
+      "Retail and wholesale walnut kernel packs",
+      600,
+      600,
+    ),
     variants: [
       weight("var-walnut-250g", "NN-WAL-250", 250, 1200, { isDefault: true }),
       weight("var-walnut-25kg", "NN-WAL-25KG", 25000, 104999),
@@ -421,7 +439,7 @@ const drafts: Product[] = [
     name: "Ephedra (Somakalpa)",
     tagline: "Dried botanical raw material, bulk only.",
     categoryId: "cat-herbal-roots",
-    image: productImage("product-ephedra.webp", "Bulk sacks and boxes of Ephedra"),
+    image: productImage("product-ephedra.webp", "Bulk sacks and boxes of Ephedra", 600, 600),
     variants: [],
     purchaseMode: "quote",
     badge: { label: "Bulk only", tone: "dark" },

@@ -88,7 +88,7 @@ export default async function ProductPage({ params }: Props) {
 
       <section className="px-4 pt-[18px] pb-10 md:px-8 md:pt-7 md:pb-[72px]">
         <div className="mx-auto flex max-w-[1320px] flex-col gap-[22px]">
-          <Breadcrumbs items={crumbs} />
+          <Breadcrumbs items={crumbs} spacing="loose" />
 
           <div className="flex flex-wrap items-start gap-x-14 gap-y-8">
             <ProductGallery

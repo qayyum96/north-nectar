@@ -60,6 +60,8 @@ export interface Product {
   slug: Slug;
   status: PublishStatus;
   name: string;
+  /** Short name for tight spaces (cart suggestions, chips), e.g. "Wild Thyme Tea". */
+  shortName?: string;
   /** One-line summary shown on product cards. */
   tagline: string;
   /** Long description, one string per paragraph. */

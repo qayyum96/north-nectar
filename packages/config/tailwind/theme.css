@@ -125,6 +125,8 @@
   --animate-marquee: marquee 48s linear infinite;
   --animate-leaf-float: leaf-float 4.2s ease-in-out infinite alternate;
   --animate-fade-up: fade-up 0.9s var(--ease-out-expo) both;
+  /* Draws an SVG stroke; use with pathLength="1" and stroke-dasharray: 1. */
+  --animate-draw: draw 0.9s var(--ease-out-expo) both;
 
   @keyframes marquee {
     from {
@@ -132,6 +134,15 @@
     }
     to {
       transform: translateX(-50%);
+    }
+  }
+
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
     }
   }
 

@@ -7,3 +7,10 @@ onlyBuiltDependencies:
   - sharp
   - "@tailwindcss/oxide"
   - unrs-resolver
+
+# Tailwind 4.3's Node helper require()s magic-string, but magic-string 1.x is ESM-only, which needs
+# Node >= 22.12 and fails intermittently under turbo. 0.30.21 has every API Tailwind calls
+# (replaceAll, hasChanged, generateMap hires:"boundary", toString) and ships CommonJS.
+# Remove once @tailwindcss/node imports it as ESM.
+overrides:
+  "@tailwindcss/node>magic-string": "0.30.21"

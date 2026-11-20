@@ -1,62 +1,53 @@
 "use client";
 
 import type { CartLine } from "@northnectar/types";
-import { QuantityStepper, formatPkr } from "@northnectar/ui";
+import { formatPkr } from "@northnectar/ui";
 import Image from "next/image";
 import Link from "next/link";
-import { commerceConfig } from "@/lib/constants/commerce";
+import { productPath } from "@/lib/routes";
+import { CartStepper } from "./cart-stepper";
 import { useCartStore } from "./store";
 
-/** One cart row, used by the drawer (and reused by the cart page in Phase 5). */
+/** One row in the cart drawer (mockup values). */
 export function CartLineItem({ line, onNavigate }: { line: CartLine; onNavigate?: () => void }) {
   const setQuantity = useCartStore((s) => s.setQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
+  const itemName = `${line.name} ${line.variantLabel}`;
 
   return (
-    <li className="flex gap-4 py-5">
-      <div className="relative size-20 shrink-0 overflow-hidden rounded-xl border border-line bg-white">
-        <Image
-          src={line.image.src}
-          alt={line.image.alt}
-          fill
-          sizes="80px"
-          className="object-cover"
-        />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-3">
+    <li className="flex gap-[14px] border-b border-[#ece4d3] py-4">
+      <span className="relative size-[82px] shrink-0 overflow-hidden rounded-[12px] border border-[#ece4d3] bg-white">
+        <Image src={line.image.src} alt="" fill sizes="80px" className="object-contain" />
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-[6px]">
+        <div className="flex justify-between gap-[10px]">
           <Link
-            href={`/products/${line.slug}`}
+            href={productPath(line.slug, line.variantLabel)}
             onClick={onNavigate}
-            className="text-base leading-snug font-bold text-ink hover:underline"
+            className="text-[15px] leading-[1.3] font-bold text-ink hover:underline"
           >
             {line.name}
           </Link>
-          <p className="shrink-0 text-base font-bold text-ink tabular-nums">
+          <span className="text-[15px] leading-[1.3] font-bold whitespace-nowrap">
             {formatPkr(line.unitPrice * line.quantity)}
-          </p>
+          </span>
         </div>
-        <p className="mt-0.5 text-sm text-subtle">
+        <span className="text-[14px] text-[#6a665a]">
           {line.variantLabel} · {formatPkr(line.unitPrice)} each
-        </p>
-        <div className="mt-3 flex items-center justify-between gap-3">
-          <QuantityStepper
+        </span>
+        <div className="flex items-center justify-between gap-[10px] pt-[2px]">
+          <CartStepper
             size="sm"
             value={line.quantity}
-            max={commerceConfig.maxQuantityPerLine}
             onChange={(q) => setQuantity(line.variantId, q)}
-            itemName={`${line.name} ${line.variantLabel}`}
+            itemName={itemName}
           />
           <button
             type="button"
             onClick={() => removeItem(line.variantId)}
-            className="min-h-11 cursor-pointer px-1 text-md font-semibold text-rust-700 underline underline-offset-4 hover:text-rust-600"
+            className="relative cursor-pointer border-0 bg-transparent px-[6px] py-px text-[14px] font-semibold text-[#8a4513] underline before:absolute before:-inset-x-2 before:-inset-y-3 before:content-[''] hover:text-[#6f370f]"
           >
-            Remove
-            <span className="sr-only">
-              {" "}
-              {line.name} {line.variantLabel}
-            </span>
+            Remove<span className="sr-only"> {itemName}</span>
           </button>
         </div>
       </div>

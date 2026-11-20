@@ -41,6 +41,10 @@ export interface DeliveryMethod {
   price: Pkr;
   /** Whether the free-delivery threshold applies to this method. */
   freeOverThreshold: boolean;
+  /** Working days in transit after dispatch, [fastest, slowest]. Used for delivery estimates. */
+  transitDays: [number, number];
+  /** Short name used in summaries, e.g. "Standard". */
+  shortLabel: string;
 }
 
 export interface Address {
@@ -75,6 +79,15 @@ export interface OrderTotals {
   total: Pkr;
 }
 
+export type WalletProvider = "jazzcash" | "easypaisa";
+
+/** Extra details for the chosen payment method. */
+export interface PaymentDetails {
+  walletProvider?: WalletProvider;
+  /** Mobile wallet number the customer will pay from. */
+  walletNumber?: string;
+}
+
 export interface Order {
   id: string;
   /** Human-friendly order number, e.g. "NN-10482". */
@@ -90,6 +103,7 @@ export interface Order {
   lines: OrderLine[];
   deliveryMethodId: DeliveryMethodId;
   paymentMethodId: PaymentMethodId;
+  paymentDetails?: PaymentDetails;
   totals: OrderTotals;
   discountCode?: string | null;
 }

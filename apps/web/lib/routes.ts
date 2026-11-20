@@ -35,10 +35,16 @@ export const wholesaleEnquiryPath = (productSlug?: string) =>
   productSlug ? `/contact?subject=wholesale&product=${productSlug}` : "/contact?subject=wholesale";
 
 export const footerHelpLinks: NavLink[] = [
-  { label: "Shipping and delivery", href: "/contact#faq" },
-  { label: "Returns", href: "/contact#faq" },
+  { label: "Shipping and delivery", href: "/shipping-policy" },
+  { label: "Returns", href: "/refund-policy" },
   { label: "FAQ", href: "/contact#faq" },
   { label: "Contact us", href: "/contact" },
+];
+
+/** Legal links in the footer's bottom row. */
+export const footerLegalLinks: NavLink[] = [
+  { label: "Privacy", href: "/privacy-policy" },
+  { label: "Terms", href: "/terms-and-conditions" },
 ];
 
 export const footerCompanyLinks: NavLink[] = [
