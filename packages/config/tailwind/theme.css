@@ -160,6 +160,8 @@
   /* Hero entrance (from the mockup): headline lines rise in, image pills pop in. */
   --animate-line-up: line-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
   --animate-pill-pop: pill-pop 0.7s cubic-bezier(0.3, 1.4, 0.5, 1) backwards;
+  /* Pans a wide image inside a narrower box: start -> end -> start (see @keyframes pan-x). */
+  --animate-pan-x: pan-x 9s ease-in-out infinite alternate;
 
   @keyframes line-up {
     from {
@@ -169,6 +171,18 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  /* left 0 -> 100% while translating -0 -> -100%: the image travels exactly (its width - box width). */
+  @keyframes pan-x {
+    from {
+      left: 0;
+      transform: translateX(0);
+    }
+    to {
+      left: 100%;
+      transform: translateX(-100%);
     }
   }
 

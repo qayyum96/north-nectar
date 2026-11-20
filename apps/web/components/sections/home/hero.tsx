@@ -99,11 +99,11 @@ export function HomeHero({
               className="relative -top-[0.05em] mx-2 inline-block h-[42px] w-[96px] rounded-full bg-[#bfe3c7] align-middle md:mx-[0.18em] md:h-[0.82em] md:w-[1.93em]"
             >
               <Image
-                src={images.home.showcaseShilajit.src}
-                width={images.home.showcaseShilajit.width}
-                height={images.home.showcaseShilajit.height}
+                src={images.home.harvestBasketCutout.src}
+                width={images.home.harvestBasketCutout.width}
+                height={images.home.harvestBasketCutout.height}
                 alt=""
-                sizes="(min-width: 768px) 120px, 60px"
+                sizes="(min-width: 768px) 160px, 72px"
                 loading="eager"
                 className="absolute bottom-[4%] left-1/2 h-[128%] w-auto max-w-none -translate-x-1/2 animate-pill-pop drop-shadow-[0_10px_12px_rgba(0,0,0,0.25)]"
                 style={delay(650)}
@@ -118,15 +118,19 @@ export function HomeHero({
               data-ptr="12"
               className="relative -top-[0.05em] mx-2 inline-block h-[42px] w-[96px] overflow-hidden rounded-full bg-[#f6dcb6] align-middle md:mx-[0.18em] md:h-[0.82em] md:w-[1.93em]"
             >
-              <Image
-                src={images.home.harvestBasket.src}
-                alt=""
-                fill
-                sizes="(min-width: 768px) 220px, 100px"
-                loading="eager"
-                className="animate-pill-pop object-cover object-[60%_40%]"
-                style={delay(810)}
-              />
+              {/* The panorama is shown at full pill height and pans end to end, back and forth. */}
+              <span className="absolute inset-y-0 left-0 block w-max animate-pan-x motion-reduce:animate-none">
+                <Image
+                  src={images.home.harvestPanorama.src}
+                  width={images.home.harvestPanorama.width}
+                  height={images.home.harvestPanorama.height}
+                  alt=""
+                  sizes="(min-width: 768px) 520px, 240px"
+                  loading="eager"
+                  className="h-[42px] w-auto max-w-none animate-pill-pop md:h-[0.82em]"
+                  style={delay(810)}
+                />
+              </span>
             </span>
           </span>
           <span data-line className="block animate-line-up md:whitespace-nowrap" style={delay(400)}>

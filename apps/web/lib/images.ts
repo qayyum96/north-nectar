@@ -70,6 +70,20 @@ export const images = {
       836,
       "Basket of Himalayan roots, herbs, honeycomb and dried apricots",
     ),
+    /** Transparent cut-out that pops out of the first headline pill ("Picked in [image] the"). */
+    harvestBasketCutout: img(
+      "/images/home/hero-harvest-basket-cutout.webp",
+      559,
+      480,
+      "Woven basket of Himalayan herbs, roots, dried fruit and honeycomb",
+    ),
+    /** Wide panorama that pans inside the second headline pill ("Himalayas [image]"). */
+    harvestPanorama: img(
+      "/images/home/hero-himalayan-harvest-panorama.webp",
+      1317,
+      240,
+      "Dried fruits, herbal oils, apricots and honeycomb laid out in wooden bowls",
+    ),
     valleyFlatlay: img(
       "/images/home/hero-valley-flatlay.webp",
       567,

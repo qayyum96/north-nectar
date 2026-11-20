@@ -14,6 +14,8 @@ Real photos from `north-nectar-images/` (the folder supplied by the client) are 
 | `products/product-white-apricot.webp` (600×600)                                                       | `premium-white-apricot-safed-…-*`                            |
 | `products/product-mulethi-roots.webp`, `-sanghuang-mushroom`, `-walnut-kernels`, `-ephedra` (600×600) | matching `northnectar-premium-…` / `premium-ephedra-…` files |
 | `home/hero-valley-flatlay.webp` (567×658)                                                             | `vidoe-img.webp`                                             |
+| `home/hero-harvest-basket-cutout.webp` (559×480, transparent), hero pill 1                            | `slider-img.png` (trimmed)                                   |
+| `home/hero-himalayan-harvest-panorama.webp` (1317×240), hero pill 2, pans side to side                | `page-banner-img_1.png`                                      |
 | `categories/category-pure-honey.webp`, `category-natural-oils.webp` (220×220)                         | `pure-honey-370x220.webp`, `natural-oil-blog-370x220.webp`   |
 
 The product squares were rebuilt from the supplied 600×500 crop (sharp centre) and the 300×300
