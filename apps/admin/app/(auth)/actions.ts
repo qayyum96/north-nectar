@@ -64,7 +64,7 @@ export async function signIn(_prev: AuthFormState, formData: FormData): Promise<
     .select("status")
     .eq("user_id", data.user.id)
     .maybeSingle<{ status: string }>();
-  if (!staff || staff.status !== "active") {
+  if (!staff || staff.status === "disabled") {
     await supabase.auth.signOut();
     return {
       status: "error",
@@ -75,7 +75,7 @@ export async function signIn(_prev: AuthFormState, formData: FormData): Promise<
 
   await createServiceClient()
     .from("staff")
-    .update({ last_active_at: new Date().toISOString() })
+    .update({ last_active_at: new Date().toISOString(), status: "active" })
     .eq("user_id", data.user.id);
 
   redirect(safeNext(formData.get("next")));

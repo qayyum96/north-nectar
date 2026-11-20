@@ -1,6 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { deliveryMethods } from "@/lib/constants/commerce";
+import { deliveryOptions } from "@northnectar/data/commerce-settings";
+import { getCommerceSettings } from "@/lib/commerce/settings";
 import { estimateDelivery } from "@/lib/commerce/delivery-estimate";
 import { supabaseService } from "@/lib/supabase/server";
 import type { PlacedOrder } from "./order-summary";
@@ -33,6 +34,7 @@ interface OrderRow {
     street: string;
     landmark?: string;
     city: string;
+    province?: string;
     postalCode?: string;
   };
   delivery_method_id: "standard" | "express";
@@ -78,7 +80,13 @@ export async function readLastOrder(): Promise<PlacedOrder | null> {
   if (error || !data) return null;
 
   const a = data.shipping_address;
-  const method = deliveryMethods.find((m) => m.id === data.delivery_method_id);
+  // Delivery days for the order's city (shipping rates by city in the admin).
+  const options = deliveryOptions(await getCommerceSettings(), {
+    city: a.city,
+    province: a.province,
+    amount: 1,
+  });
+  const method = options.find((m) => m.id === data.delivery_method_id) ?? options[0]!;
   return {
     number: data.number,
     createdAt: data.created_at,
@@ -93,7 +101,7 @@ export async function readLastOrder(): Promise<PlacedOrder | null> {
     ].filter(Boolean),
     deliveryMethodId: data.delivery_method_id,
     deliveryLabel: data.delivery_label,
-    eta: estimateDelivery(method?.id ?? "standard", new Date(data.created_at)).label,
+    eta: estimateDelivery(method.transitDays, new Date(data.created_at)).label,
     paymentMethodId: data.payment_method_id,
     paymentLabel: data.payment_label,
     ...(data.payment_details?.walletLabel ? { walletLabel: data.payment_details.walletLabel } : {}),

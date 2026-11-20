@@ -3,7 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { FloatingLeaf } from "@/components/decor/floating-leaf";
 import { Eyebrow, PageHeading } from "@/components/sections/page-heading";
-import { aboutContent } from "@/content/about";
+import { aboutContent, aboutCtaText } from "@/content/about";
+import { getCommerceSettings } from "@/lib/commerce/settings";
 import { images } from "@/lib/images";
 
 /* Values match the mockup: mobile base, `md:` desktop (1440 reference). */
@@ -198,8 +199,9 @@ export function OurValues() {
 }
 
 /** Orange call to action at the foot of the page. */
-export function AboutCta() {
+export async function AboutCta() {
   const { cta } = aboutContent;
+  const text = aboutCtaText(await getCommerceSettings());
   return (
     <section aria-labelledby="about-cta-title" className="px-4 pb-14 md:px-8 md:pb-24">
       {/* Mockup: max-width 1320px content-box plus 60px side padding. */}
@@ -224,7 +226,7 @@ export function AboutCta() {
           >
             {cta.title}
           </h2>
-          <p className="m-0 text-[17px] leading-[1.5] text-[#3b2a10]">{cta.text}</p>
+          <p className="m-0 text-[17px] leading-[1.5] text-[#3b2a10]">{text}</p>
         </div>
         <Link
           href={cta.action.href}

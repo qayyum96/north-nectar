@@ -1,11 +1,16 @@
-/**
- * Store details printed on invoices. Same facts as the website (apps/web/lib/seo/config.ts).
- * TODO(phase 5): read these from Settings > Store in the database.
- */
-export const STORE = {
-  name: "North Nectar",
-  website: "northnectar.com",
-  phone: "0316 4354407",
-  email: "info@northnectar.com",
-  address: "Kharfaq Village, Khaplu Road, District Ghanche, Gilgit-Baltistan",
-} as const;
+import "server-only";
+import { loadStore } from "./settings";
+
+/** Store details printed on invoices, from Settings > Store details (with safe fallbacks). */
+export async function getStoreInfo() {
+  const s = await loadStore();
+  const website = new URL(process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "https://northnectar.com").host;
+  return {
+    name: s?.store_name || "North Nectar",
+    website: website.startsWith("localhost") ? "northnectar.com" : website,
+    phone: s?.phone || "0316 4354407",
+    email: s?.email || "info@northnectar.com",
+    address:
+      [s?.address, s?.city, s?.province].filter(Boolean).join(", ") || "Gilgit-Baltistan, Pakistan",
+  };
+}

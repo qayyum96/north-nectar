@@ -1,5 +1,8 @@
+"use client";
+
+import { freeDeliveryThreshold } from "@northnectar/data/commerce-settings";
 import { cn, formatPkr } from "@northnectar/ui";
-import { commerceConfig } from "@/lib/constants/commerce";
+import { useCommerceSettings } from "./commerce-settings";
 
 /**
  * "You are Rs 951 away from free delivery" with a progress bar. `card` is the rounded box on the
@@ -14,7 +17,8 @@ export function FreeDeliveryProgress({
   variant?: "card" | "bar";
   className?: string;
 }) {
-  const threshold = commerceConfig.freeDeliveryThreshold;
+  const threshold = freeDeliveryThreshold(useCommerceSettings());
+  if (threshold === null) return null;
   const left = Math.max(0, threshold - subtotal);
   const pct = Math.min(100, Math.round((subtotal / threshold) * 100));
   const message =

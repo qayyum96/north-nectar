@@ -1,6 +1,3 @@
-import type { DeliveryMethod } from "@northnectar/types";
-import { deliveryMethods } from "@/lib/constants/commerce";
-
 const TIME_ZONE = "Asia/Karachi";
 
 /** Calendar date in Pakistan time (orders placed late at night count for that day). */
@@ -33,13 +30,12 @@ const fmt = (date: Date, options: Intl.DateTimeFormatOptions) =>
  * (or "Fri 28 Nov to Tue 2 Dec" across months).
  */
 export function estimateDelivery(
-  methodId: DeliveryMethod["id"],
+  transitDays: readonly [number, number],
   placedAt: Date = new Date(),
 ): { from: string; to: string; label: string } {
-  const method = deliveryMethods.find((m) => m.id === methodId) ?? deliveryMethods[0]!;
   const start = pakistanDate(placedAt);
-  const from = addWorkingDays(start, method.transitDays[0]);
-  const to = addWorkingDays(start, method.transitDays[1]);
+  const from = addWorkingDays(start, transitDays[0]);
+  const to = addWorkingDays(start, transitDays[1]);
   const sameMonth = from.getUTCMonth() === to.getUTCMonth();
   const fromLabel = `${fmt(from, { weekday: "short" })} ${from.getUTCDate()}${sameMonth ? "" : ` ${fmt(from, { month: "short" })}`}`;
   const toLabel = `${fmt(to, { weekday: "short" })} ${to.getUTCDate()} ${fmt(to, { month: "short" })}`;

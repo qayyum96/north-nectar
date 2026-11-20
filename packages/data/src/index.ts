@@ -5,6 +5,7 @@ import { SupabaseCatalogRepository } from "./supabase/supabase-repository";
 
 export type { CatalogRepository, ProductQuery, ProductSort } from "./repository";
 export { PRODUCT_SORTS } from "./sorts";
+export * from "./commerce-settings";
 export { SeedCatalogRepository } from "./seed/seed-repository";
 export { SupabaseCatalogRepository } from "./supabase/supabase-repository";
 export { toCategory, toProduct, toVariant } from "./supabase/mappers";

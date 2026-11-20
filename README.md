@@ -50,17 +50,17 @@ A Husky pre-commit hook runs ESLint and Prettier on staged files (lint-staged).
 
 See [`apps/web/.env.example`](apps/web/.env.example) and [`apps/admin/.env.example`](apps/admin/.env.example).
 
-| Variable                                                     | Purpose                                                                                       |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`                                       | Base URL for canonical links, sitemap, Open Graph and JSON-LD (no trailing slash)             |
-| `NEXT_PUBLIC_SITE_ENV`                                       | `production` allows indexing. Anything else sets robots `noindex` and `Disallow: /`           |
-| `CATALOG_SOURCE`                                             | Catalogue source: `supabase` (the database) or `seed` (files in `packages/data`)              |
-| `CATALOG_INCLUDE_DRAFTS`                                     | `true` shows draft products for local layout testing. Ignored when the site env is production |
-| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase project URL and publishable key                                                      |
-| `SUPABASE_SERVICE_ROLE_KEY`                                  | Supabase secret key, server only (orders, messages, newsletter)                               |
-| `SUPABASE_DB_URL`                                            | Session pooler connection string, only for the `db:*` scripts                                 |
-| `NEXT_PUBLIC_STOREFRONT_URL`                                 | Admin only: website address for store links and product images                                |
-| `REVALIDATE_SECRET`                                          | Same random value in both apps; lets the admin refresh the website after catalogue changes    |
+| Variable                                                     | Purpose                                                                                                |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_SITE_URL`                                       | Base URL for canonical links, sitemap, Open Graph and JSON-LD (no trailing slash)                      |
+| `NEXT_PUBLIC_SITE_ENV`                                       | `production` allows indexing. Anything else sets robots `noindex` and `Disallow: /`                    |
+| `CATALOG_SOURCE`                                             | Catalogue source: `supabase` (the database) or `seed` (files in `packages/data`)                       |
+| `CATALOG_INCLUDE_DRAFTS`                                     | `true` shows draft products for local layout testing. Ignored when the site env is production          |
+| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase project URL and publishable key                                                               |
+| `SUPABASE_SERVICE_ROLE_KEY`                                  | Supabase secret key, server only (orders, messages, newsletter)                                        |
+| `SUPABASE_DB_URL`                                            | Session pooler connection string, only for the `db:*` scripts                                          |
+| `NEXT_PUBLIC_STOREFRONT_URL`                                 | Admin only: website address for store links and product images                                         |
+| `REVALIDATE_SECRET`                                          | Same random value in both apps; lets the admin refresh the website after catalogue or settings changes |
 
 Placeholder content (such as the mockup's sample customer reviews) only appears when
 `NEXT_PUBLIC_SITE_ENV` is not `production`.
@@ -78,7 +78,7 @@ apps/
                         seo/ (config, metadata, JSON-LD), constants/ (commerce rules), images.ts, env.ts
     content/            Static copy and merchandising (site.ts, home.ts)
     public/images/      Placeholder images (see apps/web/IMAGES.md)
-  admin/                Placeholder for the admin portal (README only)
+  admin/                Admin portal (orders, catalogue, stock, reports, settings; see its README)
 packages/
   config/               Shared tsconfig, ESLint, Prettier and the Tailwind v4 theme (design tokens)
   types/                Domain types: Product, ProductVariant, Category, Order, ContactMessage, ...
@@ -109,17 +109,20 @@ font size is 14px.
 - Home page sections adapt to the catalogue size (see the rules in `app/(home)/page.tsx`): empty
   sections and single-item tabs are never shown.
 
-## Payments (config-driven)
+## Payments and shipping (set in the admin)
 
-Payment methods are defined in [`apps/web/lib/constants/commerce.ts`](apps/web/lib/constants/commerce.ts).
-Each has a `status`: `enabled` (selectable and shown as a payment badge), `coming_soon` (listed at
-checkout but disabled, no badge) or `hidden`. Enabled today: cash on delivery, bank transfer and
-JazzCash/Easypaisa. Card (Stripe or a local gateway) is configured but `hidden`. Footer, cart and
-drawer badges are generated from enabled methods only, so a new gateway's badges appear the moment
-it is enabled.
+Payment methods and delivery rates live in the database (`store_settings` and `shipping_zones`)
+and are edited in the admin under **Settings → Payments** and **Settings → Shipping**. The website
+reads them through [`apps/web/lib/commerce/settings.ts`](apps/web/lib/commerce/settings.ts) (with
+built-in defaults if the database can't be reached); the shared rules (zone matching, delivery
+options, enabled methods) are in
+[`packages/data/src/commerce-settings.ts`](packages/data/src/commerce-settings.ts). Delivery is
+priced by city, then province, then an "everywhere else" zone; before a city is entered the cart
+shows the lowest rate. Footer, cart and drawer badges come from the enabled methods only. Cards
+are off until a gateway is connected.
 
-**Before launch:** fill in the bank details (`paymentInstructions.bank`: bank name and IBAN) in the
-same file. They are shown at checkout and on the order confirmation.
+**Before launch:** fill in the bank name and IBAN in **Settings → Payments** (or switch bank
+transfer off). The placeholders are shown at checkout until then.
 
 ### Orders (current flow)
 

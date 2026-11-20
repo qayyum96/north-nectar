@@ -1,4 +1,5 @@
 import { BanknoteIcon, GiftIcon, TruckIcon } from "@northnectar/ui/icons";
+import { type CommerceSettings, deliveryFacts } from "@northnectar/data/commerce-settings";
 import type { Metadata } from "next";
 import { plainText, RichParagraph } from "@northnectar/ui";
 import Image from "next/image";
@@ -7,7 +8,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { JsonLd } from "@/components/seo/json-ld";
-import { productContent } from "@/content/product";
+import { productContent, productDelivery, productShippingReturns } from "@/content/product";
 import { ProductDetailsTabs } from "@/features/products/detail/product-details-tabs";
 import { ProductGallery } from "@/features/products/detail/product-gallery";
 import {
@@ -17,9 +18,10 @@ import {
 import { ProductGrid } from "@/features/products/product-grid";
 import { toPurchasable } from "@/features/products/purchasable";
 import { catalog } from "@/lib/catalog";
+import { getCommerceSettings } from "@/lib/commerce/settings";
 import { showPlaceholderContent } from "@/lib/env";
 import { categoryPath, productPath } from "@/lib/routes";
-import { productJsonLd } from "@/lib/seo/json-ld";
+import { productJsonLd, type ShippingFacts } from "@/lib/seo/json-ld";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 /** Pre-built for every active product; new products render on first visit; refreshed hourly. */
@@ -52,6 +54,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
+/** Google gets the "everywhere else" rate and the slowest-to-fastest delivery times. */
+function shippingFacts(settings: CommerceSettings): ShippingFacts {
+  const f = deliveryFacts(settings);
+  const fallback = f.zones.find((z) => z.isFallback) ?? f.zones[f.zones.length - 1];
+  return { rate: fallback?.rate ?? f.maxRate, transitDays: [f.minDays, f.maxDays] };
+}
+
 const DELIVERY_ICONS = { banknote: BanknoteIcon, truck: TruckIcon, gift: GiftIcon } as const;
 
 function stockLabel(stock: number) {
@@ -66,9 +75,10 @@ export default async function ProductPage({ params }: Props) {
   const product = await catalog.getProductBySlug(slug);
   if (!product) notFound();
 
-  const [categories, related] = await Promise.all([
+  const [categories, related, settings] = await Promise.all([
     catalog.getCategories(),
     catalog.getRelatedProducts(product, 4),
+    getCommerceSettings(),
   ]);
   const category = categories.find((c) => c.id === product.categoryId) ?? null;
   const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
@@ -89,7 +99,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <>
-      <JsonLd data={productJsonLd(product, category)} />
+      <JsonLd data={productJsonLd(product, category, shippingFacts(settings))} />
 
       <section className="px-4 pt-[18px] pb-10 md:px-8 md:pt-7 md:pb-[72px]">
         <div className="mx-auto flex max-w-[1320px] flex-col gap-[22px]">
@@ -150,7 +160,7 @@ export default async function ProductPage({ params }: Props) {
               </Suspense>
 
               <ul className="m-0 list-none rounded-[18px] border border-[#e8dfcc] bg-white px-[18px] py-[6px]">
-                {productContent.delivery.map((row) => {
+                {productDelivery(settings).map((row) => {
                   const Icon = DELIVERY_ICONS[row.icon];
                   return (
                     <li
@@ -196,7 +206,10 @@ export default async function ProductPage({ params }: Props) {
         className="px-4 pt-4 pb-10 md:px-8 md:pt-6 md:pb-[72px]"
       >
         <div className="mx-auto max-w-[1320px]">
-          <ProductDetailsTabs product={product} />
+          <ProductDetailsTabs
+            product={product}
+            shippingReturns={productShippingReturns(settings)}
+          />
         </div>
       </section>
 

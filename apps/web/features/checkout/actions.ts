@@ -6,12 +6,12 @@ import { getVariantCatalog } from "@/lib/commerce/get-variant-catalog";
 import { normalisePakistanMobile } from "@/lib/commerce/phone";
 import type { VariantCatalog } from "@/lib/commerce/variant-catalog";
 import {
-  computeTotals,
-  deliveryMethods,
-  findDiscountCode,
-  paymentInstructions,
-  paymentMethods,
-} from "@/lib/constants/commerce";
+  deliveryOptions,
+  enabledWallets,
+  paymentMethodsFor,
+} from "@northnectar/data/commerce-settings";
+import { getCommerceSettings } from "@/lib/commerce/settings";
+import { computeTotals, findDiscountCode } from "@/lib/constants/commerce";
 import { supabaseService } from "@/lib/supabase/server";
 import { rememberOrder } from "./order-cookie";
 import {
@@ -54,8 +54,13 @@ export async function placeOrder(
   }
 
   const values = parsed.data;
-  const payment = paymentMethods.find((m) => m.id === values.paymentMethodId);
-  const delivery = deliveryMethods.find((m) => m.id === values.deliveryMethodId);
+  // Payment methods and delivery rates as set in the admin right now (never cached).
+  const settings = await getCommerceSettings();
+  const city = values.city === "Other" ? values.cityOther : values.city;
+  const payment = paymentMethodsFor(settings).find((m) => m.id === values.paymentMethodId);
+  const delivery = deliveryOptions(settings, { city, province: values.province, amount: 1 }).find(
+    (m) => m.id === values.deliveryMethodId,
+  );
   if (!payment || payment.status !== "enabled" || !delivery) {
     return { ok: false, kind: "error", message: checkoutContent.errors.generic };
   }
@@ -84,6 +89,9 @@ export async function placeOrder(
   const subtotal = lines.reduce((sum, l) => sum + l.lineTotal, 0);
   const code = findDiscountCode(discountCode)?.code ?? null;
   const totals = computeTotals({
+    settings,
+    city,
+    province: values.province,
     subtotal,
     deliveryMethodId: delivery.id,
     paymentMethodId: payment.id,
@@ -94,11 +102,13 @@ export async function placeOrder(
   }
 
   const phone = normalisePakistanMobile(values.phone) ?? values.phone;
-  const city = values.city === "Other" ? values.cityOther : values.city;
   const wallet =
     payment.id === "mobile_wallet"
-      ? paymentInstructions.wallets.find((w) => w.id === values.walletProvider)
+      ? enabledWallets(settings).find((w) => w.id === values.walletProvider)
       : undefined;
+  if (payment.id === "mobile_wallet" && !wallet) {
+    return { ok: false, kind: "error", message: checkoutContent.errors.generic };
+  }
 
   // The database function locks each size, re-checks price and available stock, reserves the
   // units and writes the order, lines, customer and timeline in one transaction.

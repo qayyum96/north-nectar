@@ -167,8 +167,16 @@ function availability(variant: ProductVariant): ItemAvailability {
   return "https://schema.org/InStock";
 }
 
-function shippingDetails(): OfferShippingDetails {
-  const { standardDeliveryFee, handlingDays, transitDays } = commerceConfig.structuredData;
+/** Standard rate and transit days for Google; from Settings > Shipping when given. */
+export interface ShippingFacts {
+  rate: number;
+  transitDays: readonly [number, number];
+}
+
+function shippingDetails(facts?: ShippingFacts): OfferShippingDetails {
+  const { handlingDays } = commerceConfig.structuredData;
+  const standardDeliveryFee = facts?.rate ?? commerceConfig.structuredData.standardDeliveryFee;
+  const transitDays = facts?.transitDays ?? commerceConfig.structuredData.transitDays;
   return {
     "@type": "OfferShippingDetails",
     shippingRate: {
@@ -205,7 +213,7 @@ function returnPolicy(): MerchantReturnPolicy {
   };
 }
 
-function variantOffer(product: Product, variant: ProductVariant): Offer {
+function variantOffer(product: Product, variant: ProductVariant, shipping?: ShippingFacts): Offer {
   return {
     "@type": "Offer",
     url: absoluteUrl(productPath(product.slug, variant.label)),
@@ -215,7 +223,7 @@ function variantOffer(product: Product, variant: ProductVariant): Offer {
     availability: availability(variant),
     itemCondition: "https://schema.org/NewCondition",
     seller: { "@id": ORG_ID },
-    shippingDetails: shippingDetails(),
+    shippingDetails: shippingDetails(shipping),
     hasMerchantReturnPolicy: returnPolicy(),
   };
 }
@@ -232,6 +240,7 @@ function variantOffer(product: Product, variant: ProductVariant): Offer {
 export function productJsonLd(
   product: Product,
   category?: Pick<Category, "name"> | null,
+  shipping?: ShippingFacts,
 ): WithContext<ProductSchema> | WithContext<ProductGroup> {
   const url = absoluteUrl(productPath(product.slug));
   const imagesAbs = product.images.map((img) => absoluteUrl(img.src));
@@ -264,7 +273,7 @@ export function productJsonLd(
       url,
       sku: variant.sku,
       ...shared,
-      offers: variantOffer(product, variant),
+      offers: variantOffer(product, variant, shipping),
     };
   }
 
@@ -282,7 +291,7 @@ export function productJsonLd(
       name: `${product.name}, ${variant.label}`,
       size: variant.label,
       image: imagesAbs[0],
-      offers: variantOffer(product, variant),
+      offers: variantOffer(product, variant, shipping),
     })),
   };
 }

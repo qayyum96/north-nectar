@@ -28,7 +28,15 @@ export const getCurrentStaff = cache(async (): Promise<CurrentStaff | null> => {
       role: StaffRole;
       status: string;
     }>();
-  if (!data || data.status !== "active") return null;
+  if (!data || data.status === "disabled") return null;
+  if (data.status === "invited") {
+    // First sign-in after accepting an invite (Settings > Team and roles).
+    const { createServiceClient } = await import("@/lib/supabase/service");
+    await createServiceClient()
+      .from("staff")
+      .update({ status: "active", last_active_at: new Date().toISOString() })
+      .eq("user_id", data.user_id);
+  }
   return {
     userId: data.user_id,
     name: data.name || data.email.split("@")[0] || "Team member",

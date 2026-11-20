@@ -1,5 +1,5 @@
+import { type CommerceSettings, deliveryFacts } from "@northnectar/data/commerce-settings";
 import { formatPkr } from "@northnectar/ui";
-import { commerceConfig } from "@/lib/constants/commerce";
 import { images } from "@/lib/images";
 
 /** Copy for /about (Our story). Images come from lib/images.ts. */
@@ -106,7 +106,19 @@ export const aboutContent = {
   },
   cta: {
     title: "Taste the mountains",
-    text: `Cash on delivery across Pakistan. Free delivery over ${formatPkr(commerceConfig.freeDeliveryThreshold)}.`,
+    /** Filled in from the live settings (see aboutCtaText). */
+    text: "",
     action: { label: "Shop the harvest", href: "/shop" },
   },
 };
+
+/** "Cash on delivery across Pakistan. Free delivery over Rs 5,000." from the live settings. */
+export function aboutCtaText(settings: CommerceSettings): string {
+  const f = deliveryFacts(settings);
+  return [
+    f.cod ? "Cash on delivery across Pakistan." : "Delivered across Pakistan.",
+    f.freeOver !== null ? `Free delivery over ${formatPkr(f.freeOver)}.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}

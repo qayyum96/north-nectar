@@ -1,3 +1,8 @@
+import {
+  type CommerceSettings,
+  deliveryOptions,
+  paymentMethodsFor,
+} from "@northnectar/data/commerce-settings";
 import type { DeliveryMethod, PaymentMethod } from "@northnectar/types";
 
 /**
@@ -89,17 +94,12 @@ export function enabledPaymentMethods(): PaymentMethod[] {
   return paymentMethods.filter((m) => m.status === "enabled");
 }
 
-/** Badges for the footer, cart and drawer: only selectable methods, in config order. */
-export function paymentBadges(): string[] {
-  return enabledPaymentMethods().flatMap((m) => m.badges);
-}
-
-/** Delivery fee for a subtotal and method, applying the free-delivery threshold. */
-export function deliveryFee(subtotal: number, methodId: DeliveryMethod["id"] = "standard"): number {
-  const method = deliveryMethods.find((m) => m.id === methodId) ?? deliveryMethods[0]!;
-  if (subtotal <= 0) return 0;
-  if (method.freeOverThreshold && subtotal >= commerceConfig.freeDeliveryThreshold) return 0;
-  return method.price;
+/**
+ * Badges for the footer, cart and drawer: only the methods enabled in the admin
+ * (Settings > Payments), in checkout order.
+ */
+export function paymentBadges(settings: CommerceSettings): string[] {
+  return paymentMethodsFor(settings).flatMap((m) => m.badges);
 }
 
 /* ------------------------------------------------------------------------------------------------
@@ -149,22 +149,35 @@ export interface Totals {
   total: number;
 }
 
+/**
+ * Delivery depends on the city and province (shipping rates by city in the admin). Without an
+ * address (the cart) the cheapest zone is used as an estimate; checkout shows the exact fee.
+ */
 export function computeTotals({
+  settings,
   subtotal,
   deliveryMethodId = "standard",
   paymentMethodId = "cod",
   discountCode,
+  city,
+  province,
 }: {
+  settings: CommerceSettings;
   subtotal: number;
   deliveryMethodId?: DeliveryMethod["id"];
   paymentMethodId?: PaymentMethod["id"];
   discountCode?: string | null;
+  city?: string | null;
+  province?: string | null;
 }): Totals {
   const discount = discountAmount(discountCode, subtotal);
   const afterDiscount = subtotal - discount;
-  const delivery = deliveryFee(afterDiscount, deliveryMethodId);
+  const options = deliveryOptions(settings, { city, province, amount: afterDiscount });
+  const delivery = (options.find((o) => o.id === deliveryMethodId) ?? options[0]!).fee;
   const paymentFee =
-    subtotal > 0 ? (paymentMethods.find((m) => m.id === paymentMethodId)?.fee ?? 0) : 0;
+    subtotal > 0
+      ? (paymentMethodsFor(settings).find((m) => m.id === paymentMethodId)?.fee ?? 0)
+      : 0;
   return { subtotal, discount, delivery, paymentFee, total: afterDiscount + delivery + paymentFee };
 }
 
@@ -173,18 +186,6 @@ export function computeTotals({
  * ---------------------------------------------------------------------------------------------- */
 
 /**
- * TODO(client): replace the bracketed placeholders with the real bank and wallet details before
- * launch. They appear at checkout (Bank transfer) and on the order confirmation page.
+ * Bank and wallet details now come from the admin (Settings > Payments) through
+ * CommerceSettings; see getCommerceSettings() and useCommerceSettings().
  */
-export const paymentInstructions = {
-  bank: {
-    bankName: "[Bank name]",
-    accountTitle: "North Nectar",
-    iban: "[Your IBAN]",
-  },
-  /** Mobile wallets offered under "JazzCash or Easypaisa". */
-  wallets: [
-    { id: "jazzcash", label: "JazzCash" },
-    { id: "easypaisa", label: "Easypaisa" },
-  ] as const,
-};

@@ -1,13 +1,18 @@
 import type { Product } from "@northnectar/types";
 import { Tabs, type TabItem, RichParagraph } from "@northnectar/ui";
 import Image from "next/image";
-import { productContent } from "@/content/product";
 
 /**
  * Product detail tabs (mockup: Oswald 20px underline tabs, 40px apart). Each panel's markup and
  * spacing follow the mockup; tabs without content for a product are left out.
  */
-export function ProductDetailsTabs({ product }: { product: Product }) {
+export function ProductDetailsTabs({
+  product,
+  shippingReturns,
+}: {
+  product: Product;
+  shippingReturns: { title: string; text: string }[];
+}) {
   const items: TabItem[] = [];
 
   items.push({
@@ -127,7 +132,7 @@ export function ProductDetailsTabs({ product }: { product: Product }) {
       <div className="mt-7">
         <h2 className="sr-only">Shipping and returns</h2>
         <ul className="m-0 grid list-none gap-4 p-0 md:grid-cols-3">
-          {productContent.shippingReturns.map((item) => (
+          {shippingReturns.map((item) => (
             <li
               key={item.title}
               className="flex flex-col gap-2 rounded-[18px] border border-[#e8dfcc] bg-white p-[22px]"

@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ComponentType } from "react";
 import { footerCopy } from "@/content/site";
+import { getCommerceSettings } from "@/lib/commerce/settings";
 import { paymentBadges } from "@/lib/constants/commerce";
 import { images } from "@/lib/images";
 import { getFooterShopLinks } from "@/lib/navigation";
@@ -43,7 +44,7 @@ function FooterColumn({ title, links }: { title: string; links: NavLink[] }) {
 
 /** Site footer, mockup values (mobile base, `md:` desktop). */
 export async function SiteFooter({ newsletter }: { newsletter: "light" | "dark" | "none" }) {
-  const shopLinks = await getFooterShopLinks();
+  const [shopLinks, settings] = await Promise.all([getFooterShopLinks(), getCommerceSettings()]);
   const socialLinks = activeSocialLinks();
   const { logoStackedCream } = images.brand;
   const year = new Date().getFullYear();
@@ -140,7 +141,7 @@ export async function SiteFooter({ newsletter }: { newsletter: "light" | "dark" 
               ))}
             </p>
             <ul className="m-0 flex list-none flex-wrap gap-2 p-0" aria-label="Payment methods">
-              {paymentBadges().map((badge) => (
+              {paymentBadges(settings).map((badge) => (
                 <li
                   key={badge}
                   className="rounded-[6px] bg-[#efe2c4] px-[10px] py-1 text-[14px] leading-[21px] font-semibold text-ink"

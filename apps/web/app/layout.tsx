@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { JsonLd } from "@/components/seo/json-ld";
 import { CartDrawerLazy } from "@/features/cart/cart-drawer-lazy";
 import { CartProvider } from "@/features/cart/cart-provider";
+import { CommerceSettingsProvider } from "@/features/cart/commerce-settings";
+import { getCommerceSettings } from "@/lib/commerce/settings";
 import { getVariantCatalog } from "@/lib/commerce/get-variant-catalog";
 import { isIndexable } from "@/lib/env";
 import { getCartSuggestions, getQuickLinks } from "@/lib/navigation";
@@ -68,17 +70,20 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const [quickLinks, suggestions, variantCatalog] = await Promise.all([
+  const [quickLinks, suggestions, variantCatalog, commerceSettings] = await Promise.all([
     getQuickLinks(),
     getCartSuggestions(),
     getVariantCatalog(),
+    getCommerceSettings(),
   ]);
 
   return (
     <html lang={siteConfig.locale} className={`${figtree.variable} ${oswald.variable}`}>
       <body>
-        {children}
-        <CartDrawerLazy quickLinks={quickLinks} suggestions={suggestions} />
+        <CommerceSettingsProvider value={commerceSettings}>
+          {children}
+          <CartDrawerLazy quickLinks={quickLinks} suggestions={suggestions} />
+        </CommerceSettingsProvider>
         <CartProvider catalog={variantCatalog} />
         <JsonLd data={graphJsonLd(organizationJsonLd(), websiteJsonLd())} />
       </body>

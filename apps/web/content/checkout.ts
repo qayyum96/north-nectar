@@ -1,8 +1,8 @@
 import { formatPkr } from "@northnectar/ui";
-import { paymentInstructions } from "@/lib/constants/commerce";
+import type { PaymentSettings } from "@northnectar/data/commerce-settings";
 import { siteConfig } from "@/lib/seo/config";
 
-const { bank } = paymentInstructions;
+type Bank = PaymentSettings["bank_transfer"];
 
 /** Copy for /checkout and /order-confirmation. */
 export const checkoutContent = {
@@ -45,7 +45,8 @@ export const checkoutContent = {
     title: "Payment",
     free: "Free",
     comingSoon: "Coming soon",
-    bankDetails: `Transfer the total after placing your order. Bank: ${bank.bankName} · Account title: ${bank.accountTitle} · IBAN: ${bank.iban}. Share the receipt on WhatsApp ${siteConfig.contact.phoneDisplay}.`,
+    bankDetails: (bank: Bank) =>
+      `Transfer the total after placing your order. Bank: ${bank.bankName} · Account title: ${bank.accountTitle} · IBAN: ${bank.iban}. Share the receipt on WhatsApp ${siteConfig.contact.phoneDisplay}.`,
     walletNumber: (wallet: string) => `${wallet} mobile number`,
     /** No wallet gateway is connected yet, so payment is arranged on WhatsApp after the order. */
     walletNote: (wallet: string) =>
@@ -159,7 +160,7 @@ export const confirmationContent = {
       strong: total,
       after: " ready when your rider arrives.",
     }),
-    bankText: (total: string) => ({
+    bankText: (total: string, bank: Bank) => ({
       before: "Please transfer ",
       strong: total,
       after: ` to ${bank.bankName}, account title ${bank.accountTitle}, IBAN ${bank.iban}, and share the receipt on WhatsApp ${siteConfig.contact.phoneDisplay}.`,

@@ -13,11 +13,11 @@ import { CartBagIcon } from "@/features/cart/cart-bag-icon";
 import { useCartStore } from "@/features/cart/store";
 import { useCartTotals } from "@/features/cart/use-cart-totals";
 import {
-  deliveryFee,
-  deliveryMethods,
-  paymentInstructions,
-  paymentMethods,
-} from "@/lib/constants/commerce";
+  deliveryOptions,
+  enabledWallets,
+  paymentMethodsFor,
+} from "@northnectar/data/commerce-settings";
+import { useCommerceSettings } from "@/features/cart/commerce-settings";
 import { placeOrder } from "./actions";
 import { LockIcon } from "./lock-icon";
 import {
@@ -29,7 +29,6 @@ import {
 } from "./schema";
 
 const copy = checkoutContent;
-const visiblePayments = paymentMethods.filter((m) => m.status !== "hidden");
 
 const inputClass =
   "w-full rounded-[12px] border-[1.5px] bg-white px-4 text-[16px] text-ink placeholder:text-[#736c5a]";
@@ -50,6 +49,10 @@ export function CheckoutForm() {
   const [formError, setFormError] = useState<string | null>(null);
   const [placed, setPlaced] = useState(false);
   const [pending, startTransition] = useTransition();
+  // Payment methods, wallets and delivery rates come from the admin (Settings).
+  const settings = useCommerceSettings();
+  const visiblePayments = paymentMethodsFor(settings);
+  const wallets = enabledWallets(settings);
 
   const {
     register,
@@ -59,18 +62,34 @@ export function CheckoutForm() {
     formState: { errors, isSubmitted },
   } = useForm<CheckoutInput, unknown, CheckoutValues>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: checkoutDefaults,
+    defaultValues: {
+      ...checkoutDefaults,
+      paymentMethodId: visiblePayments[0]?.id ?? checkoutDefaults.paymentMethodId,
+      walletProvider: wallets[0]?.id ?? checkoutDefaults.walletProvider,
+    },
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
 
-  const [deliveryId, paymentId, walletId, city] = useWatch({
+  const [deliveryId, paymentId, walletId, city, cityOther, province] = useWatch({
     control,
-    name: ["deliveryMethodId", "paymentMethodId", "walletProvider", "city"],
+    name: [
+      "deliveryMethodId",
+      "paymentMethodId",
+      "walletProvider",
+      "city",
+      "cityOther",
+      "province",
+    ],
   });
-  const totals = useCartTotals(deliveryId, paymentId);
+  const address = { city: city === "Other" ? cityOther : city, province };
+  const totals = useCartTotals(deliveryId, paymentId, address);
+  const delivery = deliveryOptions(settings, {
+    ...address,
+    amount: totals.subtotal - totals.discount,
+  });
   const walletLabel =
-    paymentInstructions.wallets.find((w) => w.id === walletId)?.label ?? "JazzCash";
+    wallets.find((w) => w.id === walletId)?.label ?? wallets[0]?.label ?? "JazzCash";
 
   const err = (field: CheckoutField) => errors[field]?.message;
   const errorCount = Object.keys(errors).length;
@@ -156,9 +175,7 @@ export function CheckoutForm() {
           <Row label={copy.summary.discount} value={`−${formatPkr(totals.discount)}`} />
         ) : null}
         <Row
-          label={copy.summary.delivery(
-            deliveryMethods.find((m) => m.id === deliveryId)?.shortLabel ?? "",
-          )}
+          label={copy.summary.delivery(delivery.find((m) => m.id === deliveryId)?.shortLabel ?? "")}
           value={totals.delivery === 0 ? copy.summary.free : formatPkr(totals.delivery)}
         />
         {paymentId === "cod" ? (
@@ -349,8 +366,8 @@ export function CheckoutForm() {
               aria-label={copy.delivery.title}
               className="flex flex-col gap-[10px]"
             >
-              {deliveryMethods.map((method) => {
-                const fee = deliveryFee(totals.subtotal - totals.discount, method.id);
+              {delivery.map((method) => {
+                const fee = method.fee;
                 return (
                   <RadioCard
                     key={method.id}
@@ -392,13 +409,13 @@ export function CheckoutForm() {
                   >
                     {method.id === "bank_transfer" && paymentId === "bank_transfer" ? (
                       <p className="m-0 pr-4 pb-4 pl-[52px] text-[15px] leading-[1.6] text-[#3f4a40]">
-                        {copy.payment.bankDetails}
+                        {copy.payment.bankDetails(settings.payments.bank_transfer)}
                       </p>
                     ) : null}
                     {method.id === "mobile_wallet" && paymentId === "mobile_wallet" ? (
                       <div className="flex flex-col gap-[10px] pr-4 pb-4 pl-[52px]">
                         <div role="radiogroup" aria-label="Wallet" className="flex gap-2">
-                          {paymentInstructions.wallets.map((w) => (
+                          {wallets.map((w) => (
                             <label key={w.id} className="relative cursor-pointer">
                               <input
                                 type="radio"

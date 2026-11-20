@@ -252,7 +252,7 @@ export function KpiStrip({ items }: { items: KpiItem[] }) {
           </span>
           <span
             className={cn(
-              "text-[22px] leading-[1.25] font-bold tracking-[-0.02em] whitespace-nowrap md:text-[28px]",
+              "overflow-hidden text-[22px] leading-[1.25] font-bold tracking-[-0.02em] text-ellipsis whitespace-nowrap md:text-[28px]",
               k.alert ? "text-[#b42318]" : k.good ? "text-[#1d6b3a]" : "text-admin-text",
             )}
           >
@@ -344,3 +344,39 @@ export const tableStyles = {
   row: "text-admin-text box-border grid items-center gap-4 border-b border-[#ecebe7] px-4 py-[10px] text-[14px]",
   rowShade: "bg-[linear-gradient(to_left,#f7f6f3_62px,#ffffff_62px)]",
 };
+
+/** On/off switch (mockup payment toggles): 42 × 24, forest green when on. */
+export function Switch({
+  checked,
+  onChange,
+  label,
+  disabled,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  label: string;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "relative h-6 w-[42px] shrink-0 cursor-pointer rounded-full border-0 p-0 transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+        checked ? "bg-forest-600" : "bg-[#d4d4d1]",
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className={cn(
+          "absolute top-[3px] size-[18px] rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.3)] transition-[left]",
+          checked ? "left-[21px]" : "left-[3px]",
+        )}
+      />
+    </button>
+  );
+}

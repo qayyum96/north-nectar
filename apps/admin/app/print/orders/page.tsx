@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentStaff } from "@/lib/auth";
 import { dateLabel, formatPhone, formatPkr } from "@/lib/format";
 import { addressLines, label, loadOrder, paymentShort } from "@/lib/orders";
-import { STORE } from "@/lib/store";
+import { getStoreInfo } from "@/lib/store";
 import { PrintBar } from "./print-bar";
 
 export const metadata: Metadata = { title: "Invoices" };
@@ -27,7 +27,11 @@ export default async function PrintOrdersPage({
     ),
   ].slice(0, 100);
   if (list.length === 0) notFound();
-  const orders = (await Promise.all(list.map((n) => loadOrder(n)))).filter((o) => o !== null);
+  const [loaded, STORE] = await Promise.all([
+    Promise.all(list.map((n) => loadOrder(n))),
+    getStoreInfo(),
+  ]);
+  const orders = loaded.filter((o) => o !== null);
   if (orders.length === 0) notFound();
 
   return (

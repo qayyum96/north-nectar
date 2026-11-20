@@ -61,5 +61,19 @@ export function dayLabel(d: Date): string {
     timeZone: TIME_ZONE,
     day: "numeric",
     month: "short",
-  }).format(d);
+  })
+    .format(d)
+    .replace("Sept", "Sep");
+}
+
+/** "21 Oct to 20 Nov 2026" for a period whose end is exclusive; "21 Nov 2026" for one day. */
+export function periodLabel(start: Date, endExclusive: Date): string {
+  const last = addDays(endExclusive, -1);
+  const year = (d: Date) =>
+    new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, year: "numeric" }).format(d);
+  if (dayLabel(start) === dayLabel(last) && year(start) === year(last))
+    return `${dayLabel(last)} ${year(last)}`;
+  return year(start) === year(last)
+    ? `${dayLabel(start)} to ${dayLabel(last)} ${year(last)}`
+    : `${dayLabel(start)} ${year(start)} to ${dayLabel(last)} ${year(last)}`;
 }

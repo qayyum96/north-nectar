@@ -4,7 +4,9 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { FloatingLeaf } from "@/components/decor/floating-leaf";
 import { confirmationContent } from "@/content/checkout";
+import type { PaymentSettings } from "@northnectar/data/commerce-settings";
 import { readLastOrder } from "@/features/checkout/order-cookie";
+import { getCommerceSettings } from "@/lib/commerce/settings";
 import type { PlacedOrder } from "@/features/checkout/order-summary";
 import { maskMobile } from "@/lib/commerce/phone";
 import { images } from "@/lib/images";
@@ -30,11 +32,11 @@ function placedWhen(createdAt: string): string {
 
 /** Order confirmation, read from the cookie set when the order was placed (mockup values). */
 export default async function OrderConfirmationPage() {
-  const order = await readLastOrder();
+  const [order, settings] = await Promise.all([readLastOrder(), getCommerceSettings()]);
   return (
     <>
       <Hero order={order} />
-      {order ? <OrderDetails order={order} /> : <Missing />}
+      {order ? <OrderDetails order={order} bank={settings.payments.bank_transfer} /> : <Missing />}
     </>
   );
 }
@@ -182,12 +184,18 @@ function Rich({ text }: { text: { before: string; strong: string; after: string 
   );
 }
 
-function OrderDetails({ order }: { order: PlacedOrder }) {
+function OrderDetails({
+  order,
+  bank,
+}: {
+  order: PlacedOrder;
+  bank: PaymentSettings["bank_transfer"];
+}) {
   const total = formatPkr(order.totals.total);
   const steps = copy.track.steps(order.eta);
   const paymentText =
     order.paymentMethodId === "bank_transfer"
-      ? copy.cards.bankText(total)
+      ? copy.cards.bankText(total, bank)
       : order.paymentMethodId === "mobile_wallet"
         ? copy.cards.walletText(total, order.walletLabel ?? "wallet")
         : copy.cards.codText(total);

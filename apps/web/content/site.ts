@@ -1,15 +1,11 @@
 import { siteConfig } from "@/lib/seo/config";
-import { commerceConfig } from "@/lib/constants/commerce";
+import { type CommerceSettings, deliveryFacts } from "@northnectar/data/commerce-settings";
 import { formatPkr } from "@northnectar/ui";
 
 /** Static copy shared by the layout (top bar, footer, newsletter). Page copy lives next to each page. */
 
-const freeOver = formatPkr(commerceConfig.freeDeliveryThreshold);
-
 export const topBar = {
   contact: `Call or WhatsApp ${siteConfig.contact.phoneDisplay}`,
-  promos: [`Free delivery on orders over ${freeOver}`, "Cash on delivery nationwide"],
-  mobile: `Free delivery over ${freeOver} · Cash on delivery`,
   wholesale: { label: "Wholesale and export", href: "/contact?subject=wholesale" },
 };
 
@@ -28,3 +24,23 @@ export const newsletterCopy = {
     text: "Harvest news, brewing tips and first access to new batches.",
   },
 };
+
+/** Top bar promos from Settings > Shipping and Payments. */
+export function topBarPromos(settings: CommerceSettings) {
+  const f = deliveryFacts(settings);
+  const free = f.freeOver !== null ? formatPkr(f.freeOver) : null;
+  return {
+    promos: [
+      free
+        ? `Free delivery on orders over ${free}`
+        : `Delivery across Pakistan from ${formatPkr(f.minRate)}`,
+      f.cod ? "Cash on delivery nationwide" : null,
+    ].filter((p): p is string => p !== null),
+    mobile: [
+      free ? `Free delivery over ${free}` : "Delivery across Pakistan",
+      f.cod ? "Cash on delivery" : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+  };
+}
