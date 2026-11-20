@@ -1,6 +1,6 @@
 # North Nectar
 
-Website and e-commerce storefront for **North Nectar** ([northnectar.com](https://northnectar.com)),
+Website, e-commerce storefront and admin portal for **North Nectar** ([northnectar.com](https://northnectar.com)),
 natural Himalayan products from Hunza, Gilgit-Baltistan, Pakistan.
 
 The approved design mockup lives in [`/design`](design/README.md). Open `design/index.html` in a
@@ -19,34 +19,47 @@ With nvm-windows: `nvm use 24.18.0`. With nvm: `nvm use`.
 
 ```bash
 pnpm install
-cp apps/web/.env.example apps/web/.env.local
-pnpm dev            # http://localhost:3000
+cp apps/web/.env.example apps/web/.env.local     # fill in the Supabase values
+cp apps/admin/.env.example apps/admin/.env.local
+pnpm dev            # website http://localhost:3000
+pnpm --filter @northnectar/admin dev   # admin http://localhost:3001
 ```
+
+The admin's own guide (first owner account, roles, sign-in settings) is in
+[`apps/admin/README.md`](apps/admin/README.md).
 
 ## Scripts (run from the repo root)
 
-| Script                         | What it does                                            |
-| ------------------------------ | ------------------------------------------------------- |
-| `pnpm dev`                     | Start the website in development mode                   |
-| `pnpm build`                   | Production build of every app (Turborepo, cached)       |
-| `pnpm start`                   | Serve the production build of the website               |
-| `pnpm lint`                    | ESLint (Next.js, TypeScript, jsx-a11y) in every package |
-| `pnpm typecheck`               | TypeScript strict type check in every package           |
-| `pnpm format` / `format:check` | Prettier (with Tailwind class sorting)                  |
-| `pnpm check`                   | format check + lint + typecheck (use in CI)             |
+| Script                                   | What it does                                                       |
+| ---------------------------------------- | ------------------------------------------------------------------ |
+| `pnpm dev`                               | Start the website in development mode                              |
+| `pnpm build`                             | Production build of every app (Turborepo, cached)                  |
+| `pnpm start`                             | Serve the production build of the website                          |
+| `pnpm lint`                              | ESLint (Next.js, TypeScript, jsx-a11y) in every package            |
+| `pnpm typecheck`                         | TypeScript strict type check in every package                      |
+| `pnpm format` / `format:check`           | Prettier (with Tailwind class sorting)                             |
+| `pnpm check`                             | format check + lint + typecheck (use in CI)                        |
+| `pnpm db:migrate`                        | Apply new files in `supabase/migrations` (needs `SUPABASE_DB_URL`) |
+| `pnpm db:status`                         | List applied and pending migrations                                |
+| `pnpm db:seed`                           | Copy the seed catalogue into Supabase (keeps existing stock)       |
+| `pnpm admin:make-owner <email> "<name>"` | Make an existing Supabase Auth user the store owner                |
 
 A Husky pre-commit hook runs ESLint and Prettier on staged files (lint-staged).
 
 ## Environment variables
 
-See [`apps/web/.env.example`](apps/web/.env.example).
+See [`apps/web/.env.example`](apps/web/.env.example) and [`apps/admin/.env.example`](apps/admin/.env.example).
 
-| Variable                 | Purpose                                                                                       |
-| ------------------------ | --------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`   | Base URL for canonical links, sitemap, Open Graph and JSON-LD (no trailing slash)             |
-| `NEXT_PUBLIC_SITE_ENV`   | `production` allows indexing. Anything else sets robots `noindex` and `Disallow: /`           |
-| `CATALOG_SOURCE`         | Data source: `seed` (default). `supabase` once implemented                                    |
-| `CATALOG_INCLUDE_DRAFTS` | `true` shows draft products for local layout testing. Ignored when the site env is production |
+| Variable                                                     | Purpose                                                                                       |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`                                       | Base URL for canonical links, sitemap, Open Graph and JSON-LD (no trailing slash)             |
+| `NEXT_PUBLIC_SITE_ENV`                                       | `production` allows indexing. Anything else sets robots `noindex` and `Disallow: /`           |
+| `CATALOG_SOURCE`                                             | Catalogue source: `supabase` (the database) or `seed` (files in `packages/data`)              |
+| `CATALOG_INCLUDE_DRAFTS`                                     | `true` shows draft products for local layout testing. Ignored when the site env is production |
+| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase project URL and publishable key                                                      |
+| `SUPABASE_SERVICE_ROLE_KEY`                                  | Supabase secret key, server only (orders, messages, newsletter)                               |
+| `SUPABASE_DB_URL`                                            | Session pooler connection string, only for the `db:*` scripts                                 |
+| `NEXT_PUBLIC_STOREFRONT_URL`                                 | Admin only: website address for store links and product images                                |
 
 Placeholder content (such as the mockup's sample customer reviews) only appears when
 `NEXT_PUBLIC_SITE_ENV` is not `production`.
@@ -116,10 +129,11 @@ discount rules (`computeTotals`, shared with the cart) and refuses the order if 
 No payment gateway is connected: cash on delivery, bank transfer and JazzCash/Easypaisa are settled
 outside the site (wallet payments are arranged on WhatsApp after the order).
 
-Until Supabase and email are connected, **orders are only written to the server log**
-(`[order] placed`), and the confirmation page reads the order from a one-day, HttpOnly cookie.
-`TODO(supabase)` / `TODO(email)` comments mark where to store orders, decrement stock and send
-receipts. Discount codes are supported end to end but none exist yet (`discountCodes`).
+Orders are saved by the `create_order` database function (callable only with the secret key). It
+locks the sizes, re-checks price and stock, reserves the units, saves the customer by phone and
+numbers the order `NN1001`, `NN1002`... The confirmation page reads the order back using a private
+token kept in a 7-day HttpOnly cookie. Shipping an order in the admin removes the reserved stock;
+cancelling releases it. Email receipts are not sent yet (`TODO(email)`). Discount codes are supported end to end but none exist yet (`discountCodes`).
 
 ### Policy pages
 
@@ -144,14 +158,22 @@ Empty entries are not rendered. A URL that is set appears as a footer icon and i
   Product / ProductGroup with offers, FAQPage, LocalBusiness. No review markup until real reviews exist.
 - Add a language later by extending `siteConfig.languages`.
 
-## Swapping the data layer to Supabase
+## Database (Supabase)
 
-UI code only talks to the `CatalogRepository` interface
-([`packages/data/src/repository.ts`](packages/data/src/repository.ts)) through
-`apps/web/lib/catalog.ts`. To move to Supabase: create the tables, implement
-`SupabaseCatalogRepository`, register it in `createCatalogRepository()` and set
-`CATALOG_SOURCE=supabase`. Step-by-step guide with schema, RLS policies and caching:
-[`packages/data/docs/supabase.md`](packages/data/docs/supabase.md).
+The catalogue, orders, customers, messages and newsletter live in Supabase (free plan, Postgres 17).
+
+- Schema and row level security: [`supabase/migrations`](supabase/migrations), applied with
+  `pnpm db:migrate`. Visitors can only read active products; everything else needs a staff
+  sign-in or the server's secret key.
+- The website reads through `CatalogRepository`
+  ([`packages/data/src/repository.ts`](packages/data/src/repository.ts));
+  `SupabaseCatalogRepository` caches a catalogue snapshot for 60 seconds.
+- **Keep-alive:** the free plan pauses after 7 days without traffic.
+  [`.github/workflows/supabase-keep-alive.yml`](.github/workflows/supabase-keep-alive.yml) makes one
+  small read twice a week. Repository secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`.
+- **Backups:** [`.github/workflows/supabase-backup.yml`](.github/workflows/supabase-backup.yml) dumps
+  the database every night, encrypts it and keeps it for 30 days as a workflow artifact. Repository
+  secrets: `SUPABASE_DB_URL`, `BACKUP_PASSPHRASE`. Restore steps are in the workflow file.
 
 ## Mobile navigation
 
@@ -169,5 +191,7 @@ The wishlist is stored in the browser and listed at `/wishlist`. Desktop keeps t
 | 4     | About and Contact                                                                                         | done   |
 | 5     | Cart, checkout, confirmation + Privacy, Terms, Refund & Return and Shipping policy pages (draft, noindex) | done   |
 | 6     | SEO and performance audit                                                                                 | done   |
+
+Admin portal phases are tracked in [`apps/admin/README.md`](apps/admin/README.md).
 
 The Phase 6 audit (method, scores, fixes and launch checklist) is in [docs/audit-phase-6.md](docs/audit-phase-6.md).

@@ -15,15 +15,21 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:migrate": "node scripts/db.mjs migrate",
+    "db:status": "node scripts/db.mjs status",
+    "db:seed": "tsx scripts/db-seed.mts",
+    "admin:make-owner": "node scripts/make-owner.mjs"
   },
   "devDependencies": {
     "@northnectar/config": "workspace:*",
     "eslint": "9.39.5",
     "husky": "9.1.7",
     "lint-staged": "17.6.1",
+    "postgres": "3.4.7",
     "prettier": "3.10.1",
     "prettier-plugin-tailwindcss": "0.8.1",
+    "tsx": "4.20.6",
     "turbo": "2.11.13",
     "typescript": "6.0.3"
   },

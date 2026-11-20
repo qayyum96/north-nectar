@@ -1,5 +1,6 @@
 "use server";
 
+import { supabaseService } from "@/lib/supabase/server";
 import { newsletterSchema, type NewsletterState } from "./schema";
 
 export async function subscribeToNewsletter(
@@ -22,13 +23,21 @@ export async function subscribeToNewsletter(
     };
   }
 
-  // TODO(supabase): insert into a `newsletter_subscribers` table (unique on email) and/or sync
-  // to the email provider. Until then the subscription is only logged on the server.
-  console.info("[newsletter] subscription", {
-    email: parsed.data.email,
-    source: parsed.data.source,
-    at: new Date().toISOString(),
-  });
+  // Re-subscribing clears an earlier unsubscribe. Duplicates are fine (primary key on email).
+  const { error } = await supabaseService()
+    .from("newsletter_subscribers")
+    .upsert(
+      {
+        email: parsed.data.email.toLowerCase(),
+        source: parsed.data.source ?? null,
+        unsubscribed_at: null,
+      },
+      { onConflict: "email" },
+    );
+  if (error) {
+    console.error("[newsletter] could not save subscription", error.message);
+    return { status: "error", message: "Sorry, that didn't work. Please try again." };
+  }
 
   return { status: "success", message: "You're in. Watch your inbox for the next harvest." };
 }

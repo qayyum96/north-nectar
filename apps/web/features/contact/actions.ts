@@ -1,6 +1,7 @@
 "use server";
 
 import type { ContactMessage } from "@northnectar/types";
+import { supabaseService } from "@/lib/supabase/server";
 import {
   contactDefaults,
   contactSchema,
@@ -59,10 +60,27 @@ export async function sendContactMessage(
     source: text(formData, "source").slice(0, 200) || "/contact",
   };
 
-  // TODO(supabase): insert `message` into a `contact_messages` table (see packages/data/docs/supabase.md).
-  // TODO(email): notify info@northnectar.com (e.g. Resend) and send the customer a confirmation.
-  // Until then submissions are only written to the server log.
-  console.info("[contact] message received", message);
+  const { error } = await supabaseService()
+    .from("contact_messages")
+    .insert({
+      id: message.id,
+      name: message.name,
+      email: message.email,
+      phone: message.phone ?? null,
+      subject: message.subject,
+      message: message.message,
+      source: message.source,
+    });
+  if (error) {
+    console.error("[contact] could not save message", error.message);
+    return {
+      status: "error",
+      message: "Sorry, your message could not be sent. Please try again or WhatsApp us.",
+      fieldErrors: {},
+      values,
+    };
+  }
+  // TODO(email): notify the shop by email (Resend) when RESEND_API_KEY is set.
 
   return {
     status: "success",

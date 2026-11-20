@@ -175,6 +175,14 @@ function ContactFormBody({ initial }: { initial: ContactInput }) {
             <strong>{errorSummary(errorCount)}</strong> and try again.
           </p>
         </div>
+      ) : serverError && Object.keys(serverError.fieldErrors).length === 0 ? (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-[14px] border border-[#f5c2bc] bg-[#fdecea] px-4 py-[14px] text-[#8f1d14]"
+        >
+          <AlertCircleIcon size={20} strokeWidth={2.2} className="mt-[2px] shrink-0" />
+          <p className="m-0 text-[15px] leading-[1.5]">{serverError.message}</p>
+        </div>
       ) : null}
 
       <div className="grid gap-[18px] md:grid-cols-2">

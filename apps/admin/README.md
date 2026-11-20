@@ -1,29 +1,56 @@
-# North Nectar admin portal (placeholder)
+# North Nectar admin portal
 
-Not built yet. This folder reserves the place for the internal admin app so the monorepo layout is
-final from day one.
+Internal app for running the shop: orders, customers, catalogue, stock, purchases, messages,
+reports and settings. Built from the admin mockup (`NorthNectar-admin-mockup`, 43 screens) in six
+phases. Next.js App Router on port **3001**, Supabase for data and sign-in.
 
-## Planned scope
-
-- Products: create, edit, publish (`status: active | draft`), variants with SKU, price (PKR) and stock
-- Categories: create, order and publish
-- Orders: list, status updates (pending → confirmed → packed → shipped → delivered), customer details
-- Contact messages and newsletter subscribers
-- Image uploads to Supabase Storage
-
-## How it will plug in
-
-- Next.js App Router app at `apps/admin`, deployed separately (e.g. `admin.northnectar.com`), behind
-  Supabase Auth with role-based access.
-- Reuses `@northnectar/ui` (components and Tailwind tokens), `@northnectar/types` (domain models) and
-  `@northnectar/config` (TypeScript, ESLint, Prettier, Tailwind preset).
-- Writes go through a write-side repository added to `@northnectar/data`. The website keeps reading
-  through `CatalogRepository`, so publishing a product in the admin makes it appear on the site with
-  no website code changes.
-
-## To start it
+## Run it
 
 ```bash
-pnpm create next-app apps/admin --ts --app --tailwind --eslint --use-pnpm --skip-install
-# then set "name": "@northnectar/admin" and extend the shared configs like apps/web does
+cp apps/admin/.env.example apps/admin/.env.local   # same Supabase values as apps/web
+pnpm --filter @northnectar/admin dev               # http://localhost:3001
 ```
+
+## First owner account
+
+1. Supabase dashboard → **Authentication → Users → Add user → Create new user**. Enter your email
+   and a password, tick **Auto Confirm User**.
+2. From the repo root: `pnpm admin:make-owner you@example.com "Your Name"`.
+3. Sign in at `/login`. More staff are invited from **Settings → Team and roles** (Phase 5).
+
+Supabase → **Authentication → URL Configuration**: set the Site URL to the admin address and add
+`http://localhost:3001/**` (and the live admin URL, e.g. `https://admin.northnectar.com/**`) to the
+Redirect URLs, so password reset links come back to the admin.
+
+## How access works
+
+- `proxy.ts` refreshes the Supabase session on every request and sends signed-out visitors to
+  `/login`. The `(admin)` layout calls `requireStaff()`: only active rows in `public.staff` get in.
+- Roles: `owner` (everything), `manager` (no settings), `staff` (orders, customers, stock,
+  messages). The sidebar hides what a role can't open ([`lib/nav.ts`](lib/nav.ts)), and the same
+  rules are enforced by row level security in the database
+  ([`supabase/migrations`](../../supabase/migrations)).
+- "Keep me signed in" unticked turns the auth cookies into browser-session cookies.
+- The admin sends `X-Robots-Tag: noindex` and `X-Frame-Options: DENY`; `robots.txt` disallows all.
+
+## Structure
+
+```
+app/(auth)/        login, forgot password, reset password (split art layout)
+app/(admin)/       signed-in pages inside the shell; [...slug] shows "coming in Phase N"
+app/auth/          email link callback and sign out routes
+components/shell/  top bar, search, notifications, account menu, sidebar, mobile menu
+components/ui.tsx  page header, cards, buttons, segmented tabs, status badges
+lib/               auth, Supabase clients, dashboard queries, Pakistan-time helpers
+```
+
+## Phases
+
+| Phase | Scope                                                                           | Status |
+| ----- | ------------------------------------------------------------------------------- | ------ |
+| 1     | Foundation: schema, RLS, sign-in, shell, dashboard, search, website on Supabase | done   |
+| 2     | Orders, customers, messages                                                     |        |
+| 3     | Products, categories, image upload                                              |        |
+| 4     | Stock, suppliers, purchases, movements, CSV import                              |        |
+| 5     | Reports and settings (payments and shipping rates move to the database)         |        |
+| 6     | Audit                                                                           |        |

@@ -1,9 +1,7 @@
 "use server";
 
-import { randomInt } from "node:crypto";
-import type { Order, OrderLine } from "@northnectar/types";
+import type { OrderLine } from "@northnectar/types";
 import { checkoutContent } from "@/content/checkout";
-import { estimateDelivery } from "@/lib/commerce/delivery-estimate";
 import { getVariantCatalog } from "@/lib/commerce/get-variant-catalog";
 import { normalisePakistanMobile } from "@/lib/commerce/phone";
 import type { VariantCatalog } from "@/lib/commerce/variant-catalog";
@@ -14,8 +12,8 @@ import {
   paymentInstructions,
   paymentMethods,
 } from "@/lib/constants/commerce";
+import { supabaseService } from "@/lib/supabase/server";
 import { rememberOrder } from "./order-cookie";
-import type { PlacedOrder } from "./order-summary";
 import {
   checkoutSchema,
   orderLinesSchema,
@@ -95,8 +93,6 @@ export async function placeOrder(
     return { ok: false, kind: "cart", message: checkoutContent.errors.priceChanged, catalog };
   }
 
-  const createdAt = new Date();
-  const number = `NN-${randomInt(10000, 100000)}`;
   const phone = normalisePakistanMobile(values.phone) ?? values.phone;
   const city = values.city === "Other" ? values.cityOther : values.city;
   const wallet =
@@ -104,69 +100,82 @@ export async function placeOrder(
       ? paymentInstructions.wallets.find((w) => w.id === values.walletProvider)
       : undefined;
 
-  const order: Order = {
-    id: crypto.randomUUID(),
-    number,
-    status: "pending",
-    createdAt: createdAt.toISOString(),
-    customer: { email: values.email, phone, whatsappUpdates: values.whatsappUpdates },
-    shippingAddress: {
-      fullName: values.fullName,
-      street: values.street,
-      ...(values.landmark ? { landmark: values.landmark } : {}),
-      city,
-      province: values.province,
-      ...(values.postalCode ? { postalCode: values.postalCode } : {}),
-      country: "PK",
-    },
-    lines: lines.map(({ image: _image, ...line }) => line),
-    deliveryMethodId: delivery.id,
-    paymentMethodId: payment.id,
-    ...(wallet
-      ? {
-          paymentDetails: {
+  // The database function locks each size, re-checks price and available stock, reserves the
+  // units and writes the order, lines, customer and timeline in one transaction.
+  const { data, error } = await supabaseService().rpc("create_order", {
+    p: {
+      source: "online",
+      email: values.email,
+      phone,
+      whatsapp_updates: values.whatsappUpdates,
+      shipping_address: {
+        fullName: values.fullName,
+        street: values.street,
+        ...(values.landmark ? { landmark: values.landmark } : {}),
+        city,
+        province: values.province,
+        ...(values.postalCode ? { postalCode: values.postalCode } : {}),
+        country: "PK",
+      },
+      delivery_method_id: delivery.id,
+      delivery_label: delivery.label,
+      payment_method_id: payment.id,
+      payment_label: payment.label,
+      payment_details: wallet
+        ? {
             walletProvider: wallet.id,
+            walletLabel: wallet.label,
             walletNumber: normalisePakistanMobile(values.walletNumber) ?? values.walletNumber,
-          },
-        }
-      : {}),
-    totals,
-    discountCode: code,
-  };
+          }
+        : null,
+      lines: lines.map((l) => ({
+        variant_id: l.variantId,
+        quantity: l.quantity,
+        unit_price: l.unitPrice,
+      })),
+      subtotal: totals.subtotal,
+      discount: totals.discount,
+      delivery_fee: totals.delivery,
+      payment_fee: totals.paymentFee,
+      total: totals.total,
+      discount_code: code,
+    },
+  });
 
-  // TODO(supabase): insert `order` (and its lines) into `orders` / `order_lines`, decrement stock.
-  // TODO(email): send the customer a receipt and notify the shop (e.g. Resend), plus a WhatsApp
-  // message when `whatsappUpdates` is on. Until then orders are only written to the server log.
-  console.info("[order] placed", JSON.stringify(order));
+  if (error) {
+    const reason = error.message.split(":")[0] ?? "";
+    if (
+      [
+        "PRICE_CHANGED",
+        "OUT_OF_STOCK",
+        "VARIANT_UNAVAILABLE",
+        "VARIANT_NOT_FOUND",
+        "TOTAL_MISMATCH",
+      ].includes(reason)
+    ) {
+      // Something changed in the meantime: send fresh prices and stock so the cart can update.
+      const fresh = await getVariantCatalog({ fresh: true });
+      return {
+        ok: false,
+        kind: "cart",
+        message:
+          reason === "PRICE_CHANGED" || reason === "TOTAL_MISMATCH"
+            ? checkoutContent.errors.priceChanged
+            : checkoutContent.errors.unavailable,
+        catalog: fresh,
+      };
+    }
+    console.error("[order] create_order failed", error.message);
+    return { ok: false, kind: "error", message: checkoutContent.errors.generic };
+  }
 
-  const placed: PlacedOrder = {
-    number,
-    createdAt: order.createdAt,
-    email: values.email,
-    phone,
-    whatsappUpdates: values.whatsappUpdates,
-    fullName: values.fullName,
-    addressLines: [
-      values.street,
-      values.landmark,
-      [city, values.postalCode].filter(Boolean).join(", "),
-    ].filter(Boolean),
-    deliveryMethodId: delivery.id,
-    deliveryLabel: delivery.label,
-    eta: estimateDelivery(delivery.id, createdAt).label,
-    paymentMethodId: payment.id,
-    paymentLabel: payment.label,
-    ...(wallet ? { walletLabel: wallet.label } : {}),
-    lines: lines.map((l) => ({
-      name: l.name,
-      label: l.variantLabel,
-      quantity: l.quantity,
-      lineTotal: l.lineTotal,
-      image: l.image,
-    })),
-    totals,
-  };
-  await rememberOrder(placed);
+  const row = (Array.isArray(data) ? data[0] : data) as
+    { order_id: string; order_number: string; access_token: string } | undefined;
+  if (!row) return { ok: false, kind: "error", message: checkoutContent.errors.generic };
 
-  return { ok: true, number };
+  // TODO(email): send the customer a receipt and notify the shop (Resend) once the domain is set
+  // up. WhatsApp updates are sent from the admin with one tap.
+  await rememberOrder({ number: row.order_number, token: row.access_token });
+
+  return { ok: true, number: row.order_number };
 }

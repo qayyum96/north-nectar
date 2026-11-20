@@ -1,0 +1,66 @@
+# Nightly backup of the shop database (the free plan has no backups you can download).
+# The dump is encrypted before it is stored, so it is safe even if the repository is public.
+# Needs two repository secrets:
+#   SUPABASE_DB_URL    the Session pooler connection string (port 5432), password included
+#   BACKUP_PASSPHRASE  a long random passphrase; keep a copy somewhere safe, it is needed to restore
+#
+# Each backup is kept for 30 days under Actions -> this workflow -> run -> Artifacts.
+# Restore: gpg -d backup.dump.gpg > backup.dump && pg_restore --no-owner -d "<db url>" backup.dump
+name: Supabase backup
+
+on:
+  schedule:
+    - cron: "40 21 * * *" # every night, 02:40 Pakistan time
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check secrets
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::error::Add the SUPABASE_DB_URL and BACKUP_PASSPHRASE repository secrets."
+            exit 1
+          fi
+
+      - name: Install pg_dump 17 (matches the Supabase server)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Dump and encrypt
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          stamp=$(date -u +%Y-%m-%d)
+          echo "STAMP=$stamp" >> "$GITHUB_ENV"
+          # Shop data (public) and the migration history. Staff sign-ins live in Supabase Auth and
+          # can be re-invited, so the auth schema is left out.
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" \
+            --format=custom --no-owner --no-privileges \
+            --schema=public --schema=supabase_migrations \
+            --file="northnectar-$stamp.dump"
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" \
+            --symmetric --cipher-algo AES256 --output "northnectar-$stamp.dump.gpg" "northnectar-$stamp.dump"
+          rm "northnectar-$stamp.dump"
+          ls -lh "northnectar-$stamp.dump.gpg"
+
+      - name: Store backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: northnectar-db-${{ env.STAMP }}
+          path: northnectar-${{ env.STAMP }}.dump.gpg
+          retention-days: 30
+          if-no-files-found: error

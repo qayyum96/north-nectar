@@ -1,0 +1,47 @@
+@import "tailwindcss";
+@import "@northnectar/config/tailwind/theme.css";
+
+/* Workspace packages live under node_modules symlinks, which Tailwind skips by default. */
+@source "../../../packages/ui/src";
+
+/* Admin design tokens (from the admin mockup). Neutral greys with the brand forest green. */
+@theme {
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --color-admin-bg: #f1f1ef;
+  --color-admin-panel: #f5f5f5;
+  --color-admin-line: #e3e3e3;
+  --color-admin-line-soft: #f0f0ee;
+  --color-admin-text: #1f1f1f;
+  --color-admin-muted: #616161;
+  --color-admin-label: #6b6b68;
+  --color-admin-nav: #303030;
+  --color-admin-topbar: #1a1a1a;
+  --color-admin-seg: #e8e7e3;
+  --color-admin-field: #d3d3cf;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-admin-bg text-admin-text font-sans text-[14px] leading-[1.5] antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-forest-600);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
