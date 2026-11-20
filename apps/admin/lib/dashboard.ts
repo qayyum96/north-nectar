@@ -113,7 +113,7 @@ export async function loadDashboard(range: DashboardRange) {
     supabase
       .from("contact_messages")
       .select("id, name, subject, message, created_at")
-      .eq("status", "open")
+      .is("read_at", null)
       .order("created_at", { ascending: false })
       .limit(3),
     supabase

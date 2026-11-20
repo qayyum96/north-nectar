@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const staff = await requireStaff();
   const supabase = await createClient();
 
-  const [pendingCount, openCount, pendingOrders, openMessages] = await Promise.all([
+  const [pendingCount, unreadCount, pendingOrders, unreadMessages] = await Promise.all([
     supabase
       .from("orders")
       .select("id", { count: "exact", head: true })
@@ -22,7 +22,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     supabase
       .from("contact_messages")
       .select("id", { count: "exact", head: true })
-      .eq("status", "open"),
+      .is("read_at", null),
     supabase
       .from("orders")
       .select("id, number, total, created_at, shipping_address")
@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     supabase
       .from("contact_messages")
       .select("id, name, subject, created_at")
-      .eq("status", "open")
+      .is("read_at", null)
       .order("created_at", { ascending: false })
       .limit(5),
   ]);
@@ -47,7 +47,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       time: shortWhen(o.created_at),
       at: o.created_at,
     })),
-    ...(openMessages.data ?? []).map((m) => ({
+    ...(unreadMessages.data ?? []).map((m) => ({
       id: `message-${m.id}`,
       kind: "message" as const,
       title: `Message from ${m.name}`,
@@ -63,7 +63,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <AdminShell
       nav={navFor(staff.role)}
-      counts={{ orders: pendingCount.count ?? 0, messages: openCount.count ?? 0 }}
+      counts={{ orders: pendingCount.count ?? 0, messages: unreadCount.count ?? 0 }}
       notifications={notifications.map(({ at: _at, ...n }) => n)}
       staff={{
         name: staff.name,

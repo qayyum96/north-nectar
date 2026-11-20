@@ -132,8 +132,8 @@ outside the site (wallet payments are arranged on WhatsApp after the order).
 Orders are saved by the `create_order` database function (callable only with the secret key). It
 locks the sizes, re-checks price and stock, reserves the units, saves the customer by phone and
 numbers the order `NN1001`, `NN1002`... The confirmation page reads the order back using a private
-token kept in a 7-day HttpOnly cookie. Shipping an order in the admin removes the reserved stock;
-cancelling releases it. Email receipts are not sent yet (`TODO(email)`). Discount codes are supported end to end but none exist yet (`discountCodes`).
+token kept in a 7-day HttpOnly cookie. Orders are then processed in the admin (confirm, ship, deliver, cancel, return; see
+[`apps/admin/README.md`](apps/admin/README.md)), which moves stock in the same transaction. Email receipts are not sent yet (`TODO(email)`). Discount codes are supported end to end but none exist yet (`discountCodes`).
 
 ### Policy pages
 

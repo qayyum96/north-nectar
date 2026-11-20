@@ -216,3 +216,129 @@ export function EmptyState({
     </div>
   );
 }
+
+/* ----------------------------------------------------------------------------------------------
+ * Shared pieces for the list and detail pages (orders, customers, messages...)
+ * -------------------------------------------------------------------------------------------- */
+
+export const extraButtonStyles = {
+  /** Secondary button with red text (Cancel order). */
+  danger: cn(buttonStyles.secondary, "text-[#b42318]"),
+  /** 36px toolbar button (Sort, Columns, Export in a card toolbar, pagination). */
+  tool: "border-admin-field text-admin-text inline-flex h-9 cursor-pointer items-center gap-[6px] rounded-[8px] border bg-white px-3 text-[14px] font-semibold whitespace-nowrap hover:bg-[#fafaf9] disabled:cursor-default disabled:opacity-50",
+};
+
+export interface KpiItem {
+  label: string;
+  value: string;
+  note?: ReactNode;
+  /** Red value and note (e.g. orders waiting to be confirmed). */
+  alert?: boolean;
+}
+
+/** Row of headline numbers in one white card, divided by hairlines (mockup KPI strip). */
+export function KpiStrip({ items }: { items: KpiItem[] }) {
+  return (
+    <div className="border-admin-line grid grid-cols-2 overflow-hidden rounded-[12px] border bg-white md:grid-cols-[repeat(auto-fit,minmax(210px,1fr))]">
+      {items.map((k) => (
+        <div
+          key={k.label}
+          className="flex min-w-0 flex-col gap-1 px-4 py-[14px] shadow-[-1px_0_0_#e3e3e3,0_-1px_0_#e3e3e3] md:px-5 md:py-[18px]"
+        >
+          <span className="text-admin-label text-[14px] leading-[1.35] font-semibold tracking-[0.05em] uppercase">
+            {k.label}
+          </span>
+          <span
+            className={cn(
+              "text-[22px] leading-[1.25] font-bold tracking-[-0.02em] whitespace-nowrap md:text-[28px]",
+              k.alert ? "text-[#b42318]" : "text-admin-text",
+            )}
+          >
+            {k.value}
+          </span>
+          {k.note ? (
+            <span className={cn("text-[14px]", k.alert ? "text-[#b42318]" : "text-admin-muted")}>
+              {k.note}
+            </span>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Round initials avatar (34px in tables). */
+export function Avatar({ initials, size = 34 }: { initials: string; size?: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{ width: size, height: size }}
+      className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#efebe4] text-[14px] font-semibold text-[#5c5446]"
+    >
+      {initials}
+    </span>
+  );
+}
+
+/** Text field, select and textarea styles from the mockup forms. */
+export const fieldStyles = {
+  input:
+    "text-admin-text box-border h-10 w-full rounded-[10px] border border-[#d4d4d1] bg-white px-3 text-[14px] placeholder:text-[#8a8a86]",
+  textarea:
+    "text-admin-text box-border min-h-[92px] w-full resize-y rounded-[10px] border border-[#d4d4d1] bg-white px-3 py-[10px] text-[14px] placeholder:text-[#8a8a86]",
+  label: "text-admin-text text-[14px] font-semibold",
+};
+
+/** Native select with the mockup's chevron. */
+export function SelectBox({ className, children, ...props }: ComponentProps<"select">) {
+  return (
+    <span className="relative block">
+      <select
+        {...props}
+        className={cn(fieldStyles.input, "cursor-pointer appearance-none pr-[34px]", className)}
+      >
+        {children}
+      </select>
+      <span className="text-admin-muted pointer-events-none absolute top-[11px] right-[10px]">
+        <Icon name="down" size={16} />
+      </span>
+    </span>
+  );
+}
+
+/** Labelled form field (label above the control). */
+export function Field({
+  label,
+  hint,
+  error,
+  children,
+  htmlFor,
+}: {
+  label: string;
+  hint?: ReactNode;
+  error?: string;
+  children: ReactNode;
+  htmlFor?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-[6px]">
+      <label htmlFor={htmlFor} className={fieldStyles.label}>
+        {label}
+      </label>
+      {children}
+      {error ? (
+        <span className="text-[14px] text-[#b42318]">{error}</span>
+      ) : hint ? (
+        <span className="text-admin-muted text-[14px]">{hint}</span>
+      ) : null}
+    </div>
+  );
+}
+
+/** Table frame: header row background shades the last (actions) column like the mockup. */
+export const tableStyles = {
+  head: "text-admin-label grid min-h-[46px] items-center gap-4 border-b border-admin-line px-4 text-[14px] font-semibold tracking-[0.05em] uppercase",
+  headShade: "bg-[linear-gradient(to_left,#efede8_62px,#f4f2ee_62px)]",
+  row: "text-admin-text box-border grid items-center gap-4 border-b border-[#ecebe7] px-4 py-[10px] text-[14px]",
+  rowShade: "bg-[linear-gradient(to_left,#f7f6f3_62px,#ffffff_62px)]",
+};

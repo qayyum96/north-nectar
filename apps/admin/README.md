@@ -44,12 +44,31 @@ components/ui.tsx  page header, cards, buttons, segmented tabs, status badges
 lib/               auth, Supabase clients, dashboard queries, Pakistan-time helpers
 ```
 
+## Orders, customers and messages (Phase 2)
+
+- **Order flow:** pending → confirmed → shipped → delivered (or cancelled / returned). Each step runs
+  in the database function `order_update_status`, which checks the step is allowed, moves stock and
+  writes the timeline in one transaction. Placing an order reserves units, shipping removes them
+  from stock (a "sale" stock movement), cancelling releases them, and a return can put them back.
+- **WhatsApp:** after confirming, shipping or cancelling, the toast offers **Send on WhatsApp**,
+  which opens your WhatsApp with the message already written (wa.me, free). Nothing is sent
+  automatically; the timeline notes that the message was opened.
+- **Create order** (`/orders/new`) is for phone and WhatsApp orders. Prices come from the database
+  and stock is reserved the same way as website orders.
+- **Invoices:** `/print/orders?numbers=NN1001,NN1002` (Print invoice / Print invoices).
+- **Exports:** CSV, Excel (.xlsx, written without extra libraries) and PDF (a print view; choose
+  "Save as PDF").
+- **Messages:** opening a message marks it read; the sidebar badge counts unread messages.
+  Replies open prefilled in WhatsApp or your email app. Sending email from the admin comes once a
+  domain and the free Resend plan are set up.
+- **Hidden until later phases:** the mockup's Import buttons (CSV import is Phase 4).
+
 ## Phases
 
 | Phase | Scope                                                                           | Status |
 | ----- | ------------------------------------------------------------------------------- | ------ |
 | 1     | Foundation: schema, RLS, sign-in, shell, dashboard, search, website on Supabase | done   |
-| 2     | Orders, customers, messages                                                     |        |
+| 2     | Orders, customers, messages                                                     | done   |
 | 3     | Products, categories, image upload                                              |        |
 | 4     | Stock, suppliers, purchases, movements, CSV import                              |        |
 | 5     | Reports and settings (payments and shipping rates move to the database)         |        |
