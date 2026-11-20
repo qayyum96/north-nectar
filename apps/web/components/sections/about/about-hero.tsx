@@ -70,7 +70,8 @@ export function AboutHero() {
               src={basket.src}
               alt={basket.alt}
               fill
-              priority
+              preload
+              fetchPriority="high"
               sizes="(min-width: 768px) 460px, 75vw"
               className="object-cover"
             />

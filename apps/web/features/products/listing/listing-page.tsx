@@ -136,6 +136,8 @@ export function ListingPage({
           alt=""
           aria-hidden="true"
           sizes="240px"
+          preload
+          fetchPriority="high"
           className="pointer-events-none absolute top-[26px] -right-[30px] h-auto w-[120px] -rotate-[24deg] drop-shadow-[0_12px_14px_rgba(30,60,20,0.2)] md:right-[60px] md:w-[240px]"
         />
         <Image
@@ -145,6 +147,8 @@ export function ListingPage({
           alt=""
           aria-hidden="true"
           sizes="90px"
+          preload
+          fetchPriority="high"
           className="pointer-events-none absolute top-[110px] right-10 h-auto w-[50px] rotate-[16deg] drop-shadow-[0_12px_14px_rgba(30,60,20,0.2)] md:right-[260px] md:w-[90px]"
         />
         <div className="relative mx-auto flex max-w-site flex-col gap-4 px-4 pt-[22px] pb-[26px] md:px-8 md:pt-10 md:pb-[34px]">

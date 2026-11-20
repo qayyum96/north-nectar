@@ -1,27 +1,41 @@
-import { z } from "zod";
-
 /**
  * Validated public environment. Only NEXT_PUBLIC_* values belong here because this module is
  * imported by both server and client code. Next inlines them at build time.
+ *
+ * Validation is plain TypeScript (no Zod) on purpose: this module is part of every page's client
+ * bundle, and Zod would add ~30 KB of gzipped JavaScript to all of them.
  */
-const schema = z.object({
-  NEXT_PUBLIC_SITE_URL: z
-    .url()
-    .default("https://northnectar.com")
-    .transform((url) => url.replace(/\/+$/, "")),
-  NEXT_PUBLIC_SITE_ENV: z.enum(["production", "preview", "development"]).default("development"),
-});
 
-const parsed = schema.safeParse({
-  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || undefined,
-  NEXT_PUBLIC_SITE_ENV: process.env.NEXT_PUBLIC_SITE_ENV || undefined,
-});
+const SITE_ENVS = ["production", "preview", "development"] as const;
+type SiteEnv = (typeof SITE_ENVS)[number];
 
-if (!parsed.success) {
-  throw new Error(`Invalid environment variables:\n${z.prettifyError(parsed.error)}`);
+function readSiteUrl(raw: string | undefined): string {
+  const value = raw?.trim() || "https://northnectar.com";
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error();
+  } catch {
+    throw new Error(
+      `Invalid environment variables:\nNEXT_PUBLIC_SITE_URL must be a URL (got "${value}")`,
+    );
+  }
+  return value.replace(/\/+$/, "");
 }
 
-export const env = parsed.data;
+function readSiteEnv(raw: string | undefined): SiteEnv {
+  const value = raw?.trim() || "development";
+  if (!(SITE_ENVS as readonly string[]).includes(value)) {
+    throw new Error(
+      `Invalid environment variables:\nNEXT_PUBLIC_SITE_ENV must be one of ${SITE_ENVS.join(", ")} (got "${value}")`,
+    );
+  }
+  return value as SiteEnv;
+}
+
+export const env = {
+  NEXT_PUBLIC_SITE_URL: readSiteUrl(process.env.NEXT_PUBLIC_SITE_URL),
+  NEXT_PUBLIC_SITE_ENV: readSiteEnv(process.env.NEXT_PUBLIC_SITE_ENV),
+} as const;
 
 /** Search engines may index the site only in production. */
 export const isIndexable = env.NEXT_PUBLIC_SITE_ENV === "production";

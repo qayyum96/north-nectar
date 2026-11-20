@@ -32,7 +32,7 @@ const copy = checkoutContent;
 const visiblePayments = paymentMethods.filter((m) => m.status !== "hidden");
 
 const inputClass =
-  "w-full rounded-[12px] border-[1.5px] bg-white px-4 text-[16px] text-ink placeholder:text-[#8a836f]";
+  "w-full rounded-[12px] border-[1.5px] bg-white px-4 text-[16px] text-ink placeholder:text-[#736c5a]";
 const border = (invalid: boolean) => (invalid ? "border-[#b42318]" : "border-[#ddd3bf]");
 
 /**
@@ -422,7 +422,7 @@ export function CheckoutForm() {
                           placeholder="03XX XXXXXXX"
                           {...aria("co-wallet", err("walletNumber"))}
                           className={cn(
-                            "h-[50px] w-full rounded-[10px] border-[1.5px] bg-white px-[14px] text-[16px] placeholder:text-[#8a836f]",
+                            "h-[50px] w-full rounded-[10px] border-[1.5px] bg-white px-[14px] text-[16px] placeholder:text-[#736c5a]",
                             border(Boolean(err("walletNumber"))),
                           )}
                           {...register("walletNumber")}

@@ -20,7 +20,7 @@ export function Eyebrow({
       id={id}
       className={cn(
         "m-0 text-[14px] leading-[21px] font-bold tracking-[0.14em] uppercase",
-        tone === "dark" ? "text-[#9ed7a6]" : "text-[#1f7a3f]",
+        tone === "dark" ? "text-[#9ed7a6]" : "text-[#1c7039]",
         className,
       )}
     >

@@ -153,6 +153,12 @@ UI code only talks to the `CatalogRepository` interface
 `CATALOG_SOURCE=supabase`. Step-by-step guide with schema, RLS policies and caching:
 [`packages/data/docs/supabase.md`](packages/data/docs/supabase.md).
 
+## Mobile navigation
+
+Below 1024px the header is a compact row (logo, search icon, cart) and an app-style bottom tab bar
+provides Home, Shop, Wishlist and Menu ([`components/layout/mobile-tab-bar.tsx`](apps/web/components/layout/mobile-tab-bar.tsx)).
+The wishlist is stored in the browser and listed at `/wishlist`. Desktop keeps the mockup header.
+
 ## Project status
 
 | Phase | Scope                                                                                                     | Status |
@@ -162,4 +168,6 @@ UI code only talks to the `CatalogRepository` interface
 | 3     | Shop, category and product pages                                                                          | done   |
 | 4     | About and Contact                                                                                         | done   |
 | 5     | Cart, checkout, confirmation + Privacy, Terms, Refund & Return and Shipping policy pages (draft, noindex) | done   |
-| 6     | SEO and performance audit                                                                                 | next   |
+| 6     | SEO and performance audit                                                                                 | done   |
+
+The Phase 6 audit (method, scores, fixes and launch checklist) is in [docs/audit-phase-6.md](docs/audit-phase-6.md).

@@ -62,7 +62,7 @@ export default function CheckoutPage() {
               {copy.steps[1]}
             </li>
             <li aria-hidden="true" className="h-[2px] w-6 bg-[#cdbf9f]" />
-            <li className="inline-flex items-center gap-[6px] text-[#8a836f]">
+            <li className="inline-flex items-center gap-[6px] text-[#736c5a]">
               <span className="inline-flex size-6 items-center justify-center rounded-full border-2 border-[#cdbf9f]">
                 3
               </span>

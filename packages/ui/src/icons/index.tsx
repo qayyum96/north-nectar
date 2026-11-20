@@ -49,6 +49,24 @@ export const BagIcon = createIcon(
   </>,
 );
 
+export const HomeIcon = createIcon(
+  "HomeIcon",
+  <>
+    <path d="M3.5 10.5 12 3.5l8.5 7" />
+    <path d="M5.5 9v10.5a1 1 0 0 0 1 1h4v-6h3v6h4a1 1 0 0 0 1-1V9" />
+  </>,
+);
+
+export const GridIcon = createIcon(
+  "GridIcon",
+  <>
+    <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+    <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+    <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+    <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
+  </>,
+);
+
 export const MenuIcon = createIcon("MenuIcon", <path d="M4 6.5h16M4 12h16M4 17.5h16" />);
 
 export const CloseIcon = createIcon("CloseIcon", <path d="M18 6 6 18M6 6l12 12" />);

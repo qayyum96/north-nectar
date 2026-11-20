@@ -21,7 +21,7 @@ const otherPaymentMethods = listOr(
 export const contactContent = {
   meta: {
     title: "Contact Us",
-    description: `Questions about an order, a product or wholesale? Call or WhatsApp ${contact.phoneDisplay}, email ${contact.email}, or send us a message. We usually reply within one working day.`,
+    description: `Questions about an order, a product or wholesale? Call or WhatsApp ${contact.phoneDisplay} or send us a message. We usually reply within one working day.`,
   },
   hero: {
     title: "Get in touch",

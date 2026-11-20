@@ -292,7 +292,7 @@ function DiscountForm() {
           placeholder={copy.summary.codePlaceholder}
           autoComplete="off"
           aria-describedby={message ? "discount-code-msg" : undefined}
-          className="h-12 min-w-0 flex-1 rounded-[10px] border border-[#ddd3bf] bg-white px-[14px] text-[15px] placeholder:text-[#8a836f]"
+          className="h-12 min-w-0 flex-1 rounded-[10px] border border-[#ddd3bf] bg-white px-[14px] text-[15px] placeholder:text-[#736c5a]"
         />
         <button
           type="submit"

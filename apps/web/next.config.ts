@@ -24,13 +24,19 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["@northnectar/ui"],
+    // Note: experimental.inlineCss was tested and rejected. It embeds the stylesheet three times per
+    // page (style tag + RSC payload), roughly tripling HTML size.
   },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
       {
+        // Images are replaced in place under the same file name (see IMAGES.md), so they are not
+        // immutable: cache for a day and refresh in the background.
         source: "/images/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+        ],
       },
       {
         source: "/videos/:path*",

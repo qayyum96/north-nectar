@@ -5,9 +5,9 @@ import { images } from "@/lib/images";
 /** Copy for /about (Our story). Images come from lib/images.ts. */
 export const aboutContent = {
   meta: {
-    title: "Our Story: Natural Products from Gilgit-Baltistan",
+    title: "Our Story: Harvests from Gilgit-Baltistan",
     description:
-      "North Nectar brings the pure harvests of Hunza and Ghanche to homes across Pakistan. Herbs, roots, berries and fruits, gathered by hand by local families and packed at source on Khaplu Road.",
+      "North Nectar brings the pure harvests of Hunza and Ghanche to homes across Pakistan: herbs, roots, berries and fruits, hand-picked and packed at source.",
   },
   hero: {
     eyebrow: "Our story",

@@ -84,7 +84,7 @@ export function SourcingSteps() {
               <div className="flex flex-col gap-2 px-[22px] pt-5 pb-6">
                 <span
                   aria-hidden="true"
-                  className="font-display text-[40px] leading-none font-bold text-[#d1ae6c]"
+                  className="font-display text-[40px] leading-none font-bold text-[#a8843f]"
                 >
                   {String(index + 1).padStart(2, "0")}
                 </span>

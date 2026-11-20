@@ -21,7 +21,7 @@ const itemClass = (active: boolean) =>
     active ? "shadow-[inset_0_-2px_0_#234c2e]" : "shadow-[inset_0_-2px_0_transparent]",
   );
 
-/** Desktop navigation (lg and up). The mobile equivalent is <MobileMenu />. */
+/** Desktop navigation (lg and up). Phones and tablets use <MobileTabBar /> and its menu panel. */
 export function MainNav({ shopMenu }: { shopMenu: NavGroup[] }) {
   const pathname = usePathname();
   const current = activeKey(pathname);

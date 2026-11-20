@@ -110,7 +110,7 @@ export function Tabs({
                         "h-14 px-[2px] font-display text-[17px] font-semibold tracking-[0.04em] uppercase md:text-[20px]",
                         selected
                           ? "text-[#0f2a1a] shadow-[inset_0_-3px_0_#234c2e]"
-                          : "text-[#8a836f] hover:text-[#0f2a1a]",
+                          : "text-[#736c5a] hover:text-[#0f2a1a]",
                       ),
                 )}
               >

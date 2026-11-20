@@ -75,6 +75,7 @@ export function ProductGallery({
           alt={current.alt}
           fill
           preload={index === 0}
+          fetchPriority={index === 0 ? "high" : undefined}
           sizes="(min-width: 1384px) 570px, (min-width: 768px) 45vw, 92vw"
           className={cn("object-contain", index > 0 && "p-7")}
         />

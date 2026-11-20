@@ -36,10 +36,10 @@ export const siteConfig = {
   domain: "northnectar.com",
   url: env.NEXT_PUBLIC_SITE_URL,
   tagline: "Himalayan botanicals",
-  titleDefault: "North Nectar | Natural Himalayan Products from Hunza, Gilgit-Baltistan",
+  titleDefault: "Natural Himalayan Products from Hunza | North Nectar",
   titleTemplate: "%s | North Nectar",
   description:
-    "Natural Himalayan products from Hunza and Gilgit-Baltistan, including sea buckthorn berries and wild thyme (tumuro) tea. Hand-picked, naturally dried, packed at source and delivered across Pakistan with cash on delivery.",
+    "Hand-picked sea buckthorn berries, wild thyme (tumuro) tea and more from Hunza and Gilgit-Baltistan, packed at source. Cash on delivery across Pakistan.",
   keywords: [
     "Himalayan products",
     "Hunza",

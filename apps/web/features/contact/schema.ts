@@ -1,33 +1,41 @@
 import { CONTACT_SUBJECTS, type ContactSubject } from "@northnectar/types";
-import { z } from "zod";
+// zod/mini: same validation as "zod" with a much smaller browser bundle (this schema runs in the
+// contact form too).
+import { z } from "zod/mini";
 
 const subjectValues = CONTACT_SUBJECTS.map((s) => s.value) as [ContactSubject, ...ContactSubject[]];
 
 export const MESSAGE_MIN = 10;
 export const MESSAGE_MAX = 2000;
+const PHONE_MSG = "Enter a valid phone number, like 0300 1234567";
 
 /** Shared by the browser (React Hook Form) and the Server Action, so both give the same errors. */
 export const contactSchema = z.object({
-  name: z.string().trim().min(1, "Please enter your name").max(100, "Please shorten your name"),
-  email: z
+  name: z
     .string()
-    .trim()
-    .min(1, "Please enter your email")
-    .pipe(z.email("Enter a valid email, like name@example.com")),
-  phone: z
-    .string()
-    .trim()
-    .max(20, "Enter a valid phone number, like 0300 1234567")
-    .refine((v) => v === "" || /^\+?[\d\s-]{7,}$/.test(v), {
-      message: "Enter a valid phone number, like 0300 1234567",
-    }),
+    .check(
+      z.trim(),
+      z.minLength(1, "Please enter your name"),
+      z.maxLength(100, "Please shorten your name"),
+    ),
+  email: z.pipe(
+    z.string().check(z.trim(), z.minLength(1, "Please enter your email")),
+    z.email("Enter a valid email, like name@example.com"),
+  ),
+  phone: z.string().check(
+    z.trim(),
+    z.maxLength(20, PHONE_MSG),
+    z.refine((v) => v === "" || /^\+?[\d\s-]{7,}$/.test(v), PHONE_MSG),
+  ),
   subject: z.enum(subjectValues),
   message: z
     .string()
-    .trim()
-    .min(1, "Please write a message")
-    .min(MESSAGE_MIN, `Please write at least ${MESSAGE_MIN} characters`)
-    .max(MESSAGE_MAX, `Please keep your message under ${MESSAGE_MAX} characters`),
+    .check(
+      z.trim(),
+      z.minLength(1, "Please write a message"),
+      z.minLength(MESSAGE_MIN, `Please write at least ${MESSAGE_MIN} characters`),
+      z.maxLength(MESSAGE_MAX, `Please keep your message under ${MESSAGE_MAX} characters`),
+    ),
 });
 
 export type ContactInput = z.input<typeof contactSchema>;

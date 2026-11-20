@@ -35,7 +35,7 @@ const initialState: ContactState = { status: "idle" };
 const copy = contactContent.form;
 
 const control =
-  "w-full rounded-[12px] border-[1.5px] bg-white px-4 text-[16px] text-ink placeholder:text-[#8a836f]";
+  "w-full rounded-[12px] border-[1.5px] bg-white px-4 text-[16px] text-ink placeholder:text-[#736c5a]";
 const controlBorder = (invalid: boolean) => (invalid ? "border-[#b42318]" : "border-[#ddd3bf]");
 
 /** Reads ?subject= and ?product= (e.g. a product page's wholesale link) to prefill the form. */

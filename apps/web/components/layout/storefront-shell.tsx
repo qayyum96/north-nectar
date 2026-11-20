@@ -24,6 +24,11 @@ export function StorefrontShell({
         {children}
       </main>
       <SiteFooter newsletter={newsletter} />
+      {/* Keeps the end of the footer clear of the fixed mobile tab bar. */}
+      <div
+        aria-hidden="true"
+        className="h-[calc(4rem+env(safe-area-inset-bottom))] bg-[#1a3a23] lg:hidden"
+      />
       <Motion />
     </>
   );

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Figtree, Oswald } from "next/font/google";
 import type { ReactNode } from "react";
 import { JsonLd } from "@/components/seo/json-ld";
-import { CartDrawer } from "@/features/cart/cart-drawer";
+import { CartDrawerLazy } from "@/features/cart/cart-drawer-lazy";
 import { CartProvider } from "@/features/cart/cart-provider";
 import { getVariantCatalog } from "@/lib/commerce/get-variant-catalog";
 import { isIndexable } from "@/lib/env";
@@ -78,7 +78,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang={siteConfig.locale} className={`${figtree.variable} ${oswald.variable}`}>
       <body>
         {children}
-        <CartDrawer quickLinks={quickLinks} suggestions={suggestions} />
+        <CartDrawerLazy quickLinks={quickLinks} suggestions={suggestions} />
         <CartProvider catalog={variantCatalog} />
         <JsonLd data={graphJsonLd(organizationJsonLd(), websiteJsonLd())} />
       </body>

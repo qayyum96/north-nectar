@@ -8,7 +8,7 @@ export const shopContent = {
   meta: {
     title: "Shop Natural Himalayan Products",
     description:
-      "Shop natural Himalayan products from Hunza and Gilgit-Baltistan: wild thyme herbal tea, dried sea buckthorn berries and more. Packed at source, cash on delivery across Pakistan.",
+      "Natural Himalayan products from Hunza and Gilgit-Baltistan: wild thyme herbal tea, dried sea buckthorn berries and more. Cash on delivery across Pakistan.",
   },
   allLabel: "All products",
   /** Category chip order (mockup: Herbal tea, Herbal roots, Dry fruits, Superfoods); others follow. */

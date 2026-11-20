@@ -118,9 +118,9 @@ const hunzaWildThymeTea: Product = {
   popularityRank: 2,
   relatedProductIds: ["prod-dried-sea-buckthorn-berries"],
   seo: {
-    title: "Hunza Wild Thyme Tea (Tumuro), Himalayan Herbal Tea",
+    title: "Hunza Wild Thyme Herbal Tea (Tumuro)",
     description:
-      "Wild thyme (tumuro) herbal tea, hand-picked in Hunza and packed at source. Naturally caffeine-free, no additives. 50g, 100g and 200g pouches with cash on delivery across Pakistan.",
+      "Wild thyme (tumuro) herbal tea, hand-picked in Hunza and packed at source. Caffeine-free with nothing added. Cash on delivery across Pakistan.",
   },
   createdAt: CREATED,
   updatedAt: UPDATED,
@@ -228,9 +228,9 @@ const driedSeaBuckthornBerries: Product = {
   popularityRank: 1,
   relatedProductIds: ["prod-hunza-wild-thyme-tea"],
   seo: {
-    title: "Dried Sea Buckthorn Berries from Gilgit-Baltistan",
+    title: "Dried Sea Buckthorn Berries, Gilgit-Baltistan",
     description:
-      "Premium dried sea buckthorn berries (Hippophae rhamnoides), hand-picked in Gilgit-Baltistan and naturally dried. 100g, 250g and 500g pouches with cash on delivery across Pakistan.",
+      "Dried sea buckthorn berries (Hippophae rhamnoides), hand-picked in Gilgit-Baltistan and naturally dried. Cash on delivery across Pakistan.",
   },
   createdAt: CREATED,
   updatedAt: UPDATED,

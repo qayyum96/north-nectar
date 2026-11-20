@@ -37,5 +37,11 @@
     "schema-dts": "2.1.0",
     "tailwindcss": "4.3.5",
     "typescript": "6.0.3"
-  }
+  },
+  "browserslist": [
+    "chrome 111",
+    "edge 111",
+    "firefox 128",
+    "safari 16.4"
+  ]
 }
