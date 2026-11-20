@@ -15,6 +15,7 @@ import {
 } from "@/lib/catalogue";
 import { formatPkr, imageSrc, plural } from "@/lib/format";
 import { PRODUCT_COLUMNS_UI, type ProductColumn } from "@/lib/product-columns";
+import { ImportButton } from "../imports/import-wizard";
 import { ProductsTable } from "./products-table";
 
 export const metadata: Metadata = { title: "Products" };
@@ -104,6 +105,7 @@ export default async function ProductsPage({
         subtitle={`${plural(products.length, "product")} · ${plural(sizes.length, "size")} · ${plural(drafts, "draft")}`}
         actions={
           <>
+            <ImportButton kind="products" />
             <ExportButton {...exportProps} />
             <ButtonLink href="/products/new" variant="primary" icon="plus">
               Add product

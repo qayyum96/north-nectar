@@ -61,7 +61,7 @@ lib/               auth, Supabase clients, dashboard queries, Pakistan-time help
 - **Messages:** opening a message marks it read; the sidebar badge counts unread messages.
   Replies open prefilled in WhatsApp or your email app. Sending email from the admin comes once a
   domain and the free Resend plan are set up.
-- **Hidden until later phases:** the mockup's Import buttons (CSV import is Phase 4).
+- Orders and Customers have no Import button: the import wizard covers products, purchases and stock.
 
 ## Products and categories (Phase 3)
 
@@ -80,8 +80,25 @@ lib/               auth, Supabase clients, dashboard queries, Pakistan-time help
 - **Website refresh:** after every product or category change the admin calls the website's
   `/api/revalidate` (protected by `REVALIDATE_SECRET`, same value in both apps), so changes show
   straight away instead of within the hour.
-- Unit costs are set from purchases in Phase 4; until then Inventory value shows how many sizes
-  still need a cost.
+- Unit costs come from purchases (or can be typed in the Adjust stock panel).
+
+## Stock, suppliers, purchases and imports (Phase 4)
+
+- **Stock** lists every size: on hand, reserved by open orders, available, low-stock level and
+  value at cost. **Adjust stock** (add, remove or set a count, with a reason) creates an
+  `ADJ-0001`-style stock movement; the same panel sets the low-stock level and unit cost.
+- **Purchases** (`PO-0001`...): products add units to stock and update each size's unit cost (the
+  latest purchase price, used for profit and stock value). Other items such as pouches and labels
+  are recorded but not stocked. Part payments, a payment dialog and supplier balances are tracked.
+- **Bills** (photo or PDF) go to the private storage bucket `bills` and open through a two-minute
+  link, so they are never public.
+- **Stock movements** is the ledger of every unit in and out (sales, purchases, adjustments,
+  returns) with period totals and gross profit.
+- **Import** (CSV or Excel, no extra libraries) for products, purchases and stock counts: upload,
+  map columns (matched automatically), preview with row errors, confirm. Rows with errors can be
+  skipped and downloaded later from **Import history**, where purchase and stock imports can be
+  undone (if the units haven't been sold since). Product imports add new products as drafts and
+  update prices of existing SKUs.
 
 ## Phases
 
@@ -90,6 +107,6 @@ lib/               auth, Supabase clients, dashboard queries, Pakistan-time help
 | 1     | Foundation: schema, RLS, sign-in, shell, dashboard, search, website on Supabase | done   |
 | 2     | Orders, customers, messages                                                     | done   |
 | 3     | Products, categories, image upload                                              | done   |
-| 4     | Stock, suppliers, purchases, movements, CSV import                              |        |
+| 4     | Stock, suppliers, purchases, movements, CSV import                              | done   |
 | 5     | Reports and settings (payments and shipping rates move to the database)         |        |
 | 6     | Audit                                                                           |        |

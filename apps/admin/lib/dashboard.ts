@@ -94,7 +94,9 @@ const pctChange = (now: number, before: number) =>
 
 export async function loadDashboard(range: DashboardRange) {
   const supabase = await createClient();
-  const [ordersRes, recentRes, messagesRes, variantsRes] = await Promise.all([
+  const dayKey = (x: Date) =>
+    new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Karachi" }).format(x);
+  const [ordersRes, recentRes, messagesRes, variantsRes, purchasesRes] = await Promise.all([
     supabase
       .from("orders")
       .select(
@@ -131,7 +133,21 @@ export async function loadDashboard(range: DashboardRange) {
           products: { name: string; status: string };
         }[]
       >(),
+    supabase
+      .from("purchases")
+      .select("total, purchase_date")
+      .gte("purchase_date", dayKey(range.prevStart))
+      .lt("purchase_date", dayKey(range.end)),
   ]);
+  const purchases = (purchasesRes.data ?? []) as { total: number; purchase_date: string }[];
+  const startKey = dayKey(range.start);
+  const spentNow = purchases
+    .filter((p) => p.purchase_date >= startKey)
+    .reduce((s, p) => s + p.total, 0);
+  const spentBefore = purchases
+    .filter((p) => p.purchase_date < startKey)
+    .reduce((s, p) => s + p.total, 0);
+  const anyPurchases = purchases.length > 0;
 
   const orders = ordersRes.data ?? [];
   const inRange = (o: OrderRow) => new Date(o.created_at) >= range.start;
@@ -167,13 +183,12 @@ export async function loadDashboard(range: DashboardRange) {
       format: "pkr",
       change: pctChange(aovNow, aovBefore),
     },
-    // Purchases are recorded from Phase 4 (Inventory and purchases).
     {
       label: "Purchases spent",
-      value: 0,
+      value: spentNow,
       format: "pkr",
-      change: null,
-      note: "No purchases recorded yet",
+      change: anyPurchases ? pctChange(spentNow, spentBefore) : null,
+      note: anyPurchases ? "No purchases last period" : "No purchases recorded yet",
     },
     profitNow === null
       ? {

@@ -258,14 +258,22 @@ export function ExportDialog({
 export function ExportButton({
   size = "header",
   ...props
-}: Omit<Parameters<typeof ExportDialog>[0], "open" | "onClose"> & { size?: "header" | "tool" }) {
+}: Omit<Parameters<typeof ExportDialog>[0], "open" | "onClose"> & {
+  size?: "header" | "tool" | "primary";
+}) {
   const [open, setOpen] = useState(false);
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={size === "tool" ? extraButtonStyles.tool : buttonStyles.secondary}
+        className={
+          size === "tool"
+            ? extraButtonStyles.tool
+            : size === "primary"
+              ? buttonStyles.primary
+              : buttonStyles.secondary
+        }
       >
         <Icon name="download" size={16} />
         Export

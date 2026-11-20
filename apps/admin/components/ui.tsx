@@ -234,6 +234,8 @@ export interface KpiItem {
   note?: ReactNode;
   /** Red value and note (e.g. orders waiting to be confirmed). */
   alert?: boolean;
+  /** Green value (e.g. stock went up). */
+  good?: boolean;
 }
 
 /** Row of headline numbers in one white card, divided by hairlines (mockup KPI strip). */
@@ -251,7 +253,7 @@ export function KpiStrip({ items }: { items: KpiItem[] }) {
           <span
             className={cn(
               "text-[22px] leading-[1.25] font-bold tracking-[-0.02em] whitespace-nowrap md:text-[28px]",
-              k.alert ? "text-[#b42318]" : "text-admin-text",
+              k.alert ? "text-[#b42318]" : k.good ? "text-[#1d6b3a]" : "text-admin-text",
             )}
           >
             {k.value}
