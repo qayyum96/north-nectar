@@ -5,7 +5,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { CartDrawer } from "@/features/cart/cart-drawer";
 import { CartProvider } from "@/features/cart/cart-provider";
 import { isIndexable } from "@/lib/env";
-import { getShopMenu } from "@/lib/navigation";
+import { getQuickLinks } from "@/lib/navigation";
 import { siteConfig } from "@/lib/seo/config";
 import { graphJsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
 import "./globals.css";
@@ -61,8 +61,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const shopMenu = await getShopMenu();
-  const quickLinks = shopMenu.flatMap((g) => g.links).slice(0, 4);
+  const quickLinks = await getQuickLinks();
 
   return (
     <html lang={siteConfig.locale} className={`${figtree.variable} ${oswald.variable}`}>

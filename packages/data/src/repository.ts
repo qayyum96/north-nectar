@@ -31,4 +31,6 @@ export interface CatalogRepository {
   /** Active categories that contain at least one active product. */
   getCategories(): Promise<Category[]>;
   getCategoryBySlug(slug: string): Promise<Category | null>;
+  /** Number of active products per category slug (for filter chips). */
+  getProductCountsByCategory(): Promise<Record<string, number>>;
 }

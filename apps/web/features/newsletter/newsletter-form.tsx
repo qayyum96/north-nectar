@@ -37,11 +37,14 @@ export function NewsletterForm({ tone, source }: { tone: "light" | "dark"; sourc
     <form action={action} noValidate className="w-full">
       <label
         htmlFor={inputId}
-        className={cn("mb-2 block text-md", tone === "dark" ? "text-kraft" : "sr-only")}
+        className={cn(
+          "mb-2 block text-[14px] leading-[21px]",
+          tone === "dark" ? "text-[#cdbf9f]" : "sr-only",
+        )}
       >
         Email address
       </label>
-      <div className="flex flex-col gap-3 sm:flex-row sm:gap-0">
+      <div className={tone === "dark" ? "flex flex-wrap gap-[10px]" : "flex flex-wrap"}>
         <input
           id={inputId}
           name="email"
@@ -53,9 +56,11 @@ export function NewsletterForm({ tone, source }: { tone: "light" | "dark"; sourc
           aria-invalid={isError || undefined}
           aria-describedby={isError ? msgId : undefined}
           className={cn(
-            "h-14 w-full min-w-0 rounded-xl border bg-white px-5 text-base text-ink placeholder:text-muted sm:flex-1 sm:rounded-r-none",
-            isError ? "border-danger-700" : tone === "dark" ? "border-white" : "border-line-strong",
-            tone === "dark" && "sm:mr-2.5 sm:rounded-r-xl",
+            tone === "dark"
+              ? "h-[52px] min-w-0 flex-[1_1_220px] rounded-[10px] border border-white bg-white px-[18px] text-[16px] text-ink placeholder:text-[#6f6a5d]"
+              : // Mockup: input and button joined (10px outer radius); the button wraps below on phones.
+                "h-14 min-w-0 flex-[1_1_240px] rounded-l-[10px] border border-r-0 border-[#ddd5c4] bg-white px-5 text-[16px] text-ink placeholder:text-[#6f6a5d]",
+            isError && "border-danger-700",
           )}
         />
         {/* Honeypot, hidden from people and assistive tech. */}
@@ -70,10 +75,10 @@ export function NewsletterForm({ tone, source }: { tone: "light" | "dark"; sourc
           type="submit"
           disabled={pending}
           className={cn(
-            "h-14 shrink-0 cursor-pointer rounded-xl px-7 font-bold transition-colors disabled:opacity-60 sm:rounded-l-none",
+            "shrink-0 cursor-pointer transition-colors disabled:opacity-60",
             tone === "dark"
-              ? "bg-gold-400 text-forest-950 hover:bg-gold-300 sm:rounded-l-xl"
-              : "bg-forest-600 tracking-[0.08em] text-white uppercase hover:bg-forest-800",
+              ? "h-[52px] rounded-[10px] bg-[#d1ae6c] px-7 text-[16px] font-bold text-[#1a3a23] hover:bg-gold-300"
+              : "h-14 rounded-r-[10px] bg-forest-600 px-[30px] text-[15px] font-extrabold tracking-[0.08em] text-white uppercase hover:bg-forest-800",
           )}
         >
           {pending ? "Subscribing…" : "Subscribe"}

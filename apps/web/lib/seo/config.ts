@@ -6,31 +6,25 @@ export type SocialId = "instagram" | "facebook" | "tiktok" | "whatsapp";
 export interface SocialLink {
   id: SocialId;
   label: string;
+  /** Full profile URL. Leave empty until confirmed; empty entries are not rendered anywhere. */
   href: string;
-  /** Only confirmed profiles are emitted in Organization.sameAs. */
-  confirmed: boolean;
 }
 
 /**
- * TODO(client): confirm the real social profile URLs and set `confirmed: true`.
- * Placeholders are shown in the footer for layout parity but never reach structured data.
+ * TODO(client): fill in the real profile URLs. An icon appears in the footer, and the URL is added
+ * to Organization.sameAs, only when `href` is set.
  */
 const social: SocialLink[] = [
-  {
-    id: "instagram",
-    label: "Instagram",
-    href: "https://www.instagram.com/northnectar",
-    confirmed: false,
-  },
-  {
-    id: "facebook",
-    label: "Facebook",
-    href: "https://www.facebook.com/northnectar",
-    confirmed: false,
-  },
-  { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@northnectar", confirmed: false },
-  { id: "whatsapp", label: "WhatsApp", href: "https://wa.me/923164354407", confirmed: true },
+  { id: "instagram", label: "Instagram", href: "" },
+  { id: "facebook", label: "Facebook", href: "" },
+  { id: "tiktok", label: "TikTok", href: "" },
+  { id: "whatsapp", label: "WhatsApp", href: "" },
 ];
+
+/** Social profiles that have a URL. */
+export function activeSocialLinks(): SocialLink[] {
+  return social.filter((s) => s.href.trim().length > 0);
+}
 
 /**
  * Central SEO and brand configuration. Every page's metadata, the sitemap and all JSON-LD read
@@ -45,7 +39,7 @@ export const siteConfig = {
   titleDefault: "North Nectar | Natural Himalayan Products from Hunza, Gilgit-Baltistan",
   titleTemplate: "%s | North Nectar",
   description:
-    "Sea buckthorn, wild thyme tea, shilajit, rare roots and dry fruits from Hunza and Gilgit-Baltistan. Hand-picked, naturally dried, packed at source and delivered across Pakistan with cash on delivery.",
+    "Natural Himalayan products from Hunza and Gilgit-Baltistan, including sea buckthorn berries and wild thyme (tumuro) tea. Hand-picked, naturally dried, packed at source and delivered across Pakistan with cash on delivery.",
   keywords: [
     "Himalayan products",
     "Hunza",

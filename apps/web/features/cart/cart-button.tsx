@@ -28,13 +28,13 @@ export function CartButton({ variant }: { variant: "desktop" | "mobile" }) {
         onClick={onClick}
         aria-label={label}
         aria-haspopup="dialog"
-        className="relative grid size-11 place-items-center rounded-full text-forest-900 hover:bg-sand-200"
+        className="relative grid size-11 place-items-center rounded-full text-ink"
       >
         <BagIcon size={24} />
         {hydrated && count > 0 ? (
           <span
             aria-hidden="true"
-            className="absolute top-0.5 right-0 grid min-w-5 place-items-center rounded-full bg-forest-600 px-1 text-sm leading-5 font-bold text-white"
+            className="absolute top-[2px] right-0 h-5 min-w-5 rounded-full bg-forest-600 px-[5px] text-center text-[14px] leading-5 font-bold text-white"
           >
             {count}
           </span>
@@ -49,14 +49,14 @@ export function CartButton({ variant }: { variant: "desktop" | "mobile" }) {
       onClick={onClick}
       aria-label={label}
       aria-haspopup="dialog"
-      className="inline-flex h-12 items-center gap-2.5 rounded-full bg-forest-600 pr-2 pl-5 font-bold text-white transition-colors hover:bg-forest-800"
+      className="inline-flex h-11 items-center gap-[10px] rounded-full bg-forest-600 px-4 text-[15px] font-semibold text-white transition-colors hover:bg-forest-800"
     >
       <BagIcon size={20} />
       <span>Cart</span>
       <span
         aria-hidden="true"
         className={cn(
-          "grid size-8 place-items-center rounded-full bg-kraft text-sm font-bold text-forest-900 tabular-nums",
+          "h-[22px] min-w-[22px] rounded-full bg-kraft px-[6px] text-center text-[14px] leading-[22px] font-bold text-ink tabular-nums",
           !hydrated && "opacity-0",
         )}
       >

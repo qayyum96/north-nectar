@@ -1,63 +1,39 @@
+import { catalog } from "@/lib/catalog";
+import { categoryPath, productPath, type NavGroup, type NavLink } from "@/lib/routes";
+
 /**
- * Navigation model shared by the header (desktop mega menu and mobile menu) and the footer.
- *
- * Phase 1 serves a static menu for the two live products. In Phase 2 `getShopMenu()` and
- * `getFooterShopLinks()` are derived from the data layer, so menu entries appear and disappear
- * with active products and categories. Callers are already async for that reason.
+ * Server-only navigation built from the catalogue, so Shop entries appear and disappear with
+ * active products and categories. Client components must import from "@/lib/routes" instead.
  */
 
-export interface NavLink {
-  label: string;
-  href: string;
-}
+const MAX_LINKS_PER_GROUP = 5;
 
-export interface NavGroup {
-  title: string;
-  href: string;
-  links: NavLink[];
-}
-
-export type PrimaryNavKey = "home" | "shop" | "about" | "contact";
-
-export const primaryNav: (NavLink & { key: PrimaryNavKey })[] = [
-  { key: "home", label: "Home", href: "/" },
-  { key: "shop", label: "Shop", href: "/shop" },
-  { key: "about", label: "Our story", href: "/about" },
-  { key: "contact", label: "Contact", href: "/contact" },
-];
-
+/** One group per active category, listing its best-selling active products. */
 export async function getShopMenu(): Promise<NavGroup[]> {
-  return [
-    {
-      title: "Herbal Tea",
-      href: "/shop/herbal-tea",
-      links: [{ label: "Wild Thyme Tea (Tumuro)", href: "/products/hunza-wild-thyme-tea" }],
-    },
-    {
-      title: "Superfoods",
-      href: "/shop/superfoods",
-      links: [{ label: "Sea Buckthorn Berries", href: "/products/dried-sea-buckthorn-berries" }],
-    },
-  ];
+  const [categories, products] = await Promise.all([
+    catalog.getCategories(),
+    catalog.getProducts({ sort: "best-selling" }),
+  ]);
+  return categories.slice(0, 4).map((category) => ({
+    title: category.name,
+    href: categoryPath(category.slug),
+    links: products
+      .filter((p) => p.categoryId === category.id)
+      .slice(0, MAX_LINKS_PER_GROUP)
+      .map((p) => ({ label: p.name, href: productPath(p.slug) })),
+  }));
 }
 
 export async function getFooterShopLinks(): Promise<NavLink[]> {
-  const groups = await getShopMenu();
+  const categories = await catalog.getCategories();
   return [
-    ...groups.map((g) => ({ label: g.title, href: g.href })),
+    ...categories.slice(0, 5).map((c) => ({ label: c.name, href: categoryPath(c.slug) })),
     { label: "All products", href: "/shop" },
   ];
 }
 
-export const footerHelpLinks: NavLink[] = [
-  { label: "Shipping and delivery", href: "/contact#faq" },
-  { label: "Returns", href: "/contact#faq" },
-  { label: "FAQ", href: "/contact#faq" },
-  { label: "Contact us", href: "/contact" },
-];
-
-export const footerCompanyLinks: NavLink[] = [
-  { label: "Our story", href: "/about" },
-  { label: "How we source", href: "/about#how-we-source" },
-  { label: "Wholesale and export", href: "/contact?subject=wholesale" },
-];
+/** Product shortcuts shown in the empty cart drawer. */
+export async function getQuickLinks(limit = 4): Promise<NavLink[]> {
+  const products = await catalog.getProducts({ sort: "best-selling", limit });
+  return products.map((p) => ({ label: p.name, href: productPath(p.slug) }));
+}

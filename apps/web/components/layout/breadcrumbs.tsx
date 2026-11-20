@@ -4,8 +4,8 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbJsonLd, type BreadcrumbItem } from "@/lib/seo/json-ld";
 
 /**
- * Visible breadcrumb trail plus matching BreadcrumbList structured data.
- * Pass the trail without "Home"; it is added automatically.
+ * Breadcrumb trail (mockup: 14px, #6a665a, current page #1f2a21 semibold, "/" separators 6px
+ * apart) plus matching BreadcrumbList structured data. Pass the trail without "Home".
  */
 export function Breadcrumbs({
   items,
@@ -17,31 +17,32 @@ export function Breadcrumbs({
   className?: string;
 }) {
   const trail: BreadcrumbItem[] = [{ name: "Home", path: "/" }, ...items];
+  const dark = tone === "dark";
   return (
     <>
       <nav aria-label="Breadcrumb" className={className}>
         <ol
           className={cn(
-            "flex flex-wrap items-center gap-x-2 text-sm",
-            tone === "dark" ? "text-sand-100" : "text-subtle",
+            "m-0 flex list-none flex-wrap gap-[6px] p-0 text-[14px] leading-[21px]",
+            dark ? "text-[#e3dccb]" : "text-[#6a665a]",
           )}
         >
           {trail.map((item, index) => {
             const last = index === trail.length - 1;
             return (
-              <li key={item.path} className="flex items-center gap-2">
+              <li key={item.path} className="inline-flex gap-[6px]">
                 {index > 0 ? <span aria-hidden="true">/</span> : null}
                 {last ? (
                   <span
                     aria-current="page"
-                    className={cn("font-semibold", tone === "dark" ? "text-white" : "text-ink")}
+                    className={cn("font-semibold", dark ? "text-white" : "text-ink")}
                   >
                     {item.name}
                   </span>
                 ) : (
                   <Link
                     href={item.path}
-                    className="inline-flex min-h-11 items-center hover:underline"
+                    className="relative before:absolute before:inset-x-0 before:-inset-y-3 before:content-[''] hover:underline"
                   >
                     {item.name}
                   </Link>

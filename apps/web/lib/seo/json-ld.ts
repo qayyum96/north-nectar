@@ -15,7 +15,8 @@ import type {
   WithContext,
 } from "schema-dts";
 import { commerceConfig } from "@/lib/constants/commerce";
-import { absoluteUrl, siteConfig } from "./config";
+import { productPath } from "@/lib/routes";
+import { absoluteUrl, activeSocialLinks, siteConfig } from "./config";
 
 /*
  * Structured data builders. Each returns a plain schema.org object; render it with <JsonLd />.
@@ -38,8 +39,9 @@ function postalAddress() {
 }
 
 export function organizationJsonLd(): WithContext<Organization> {
-  const sameAs = siteConfig.social
-    .filter((s) => s.confirmed && s.id !== "whatsapp")
+  // Only real profile pages belong in sameAs (not the WhatsApp chat link).
+  const sameAs = activeSocialLinks()
+    .filter((s) => s.id !== "whatsapp")
     .map((s) => s.href);
   return {
     "@context": "https://schema.org",
@@ -202,19 +204,10 @@ function returnPolicy(): MerchantReturnPolicy {
   };
 }
 
-/** Public URL of a product page, optionally preselecting a size. */
-export function productPath(
-  product: Pick<Product, "slug">,
-  variant?: Pick<ProductVariant, "label">,
-) {
-  const base = `/products/${product.slug}`;
-  return variant ? `${base}?size=${encodeURIComponent(variant.label.toLowerCase())}` : base;
-}
-
 function variantOffer(product: Product, variant: ProductVariant): Offer {
   return {
     "@type": "Offer",
-    url: absoluteUrl(productPath(product, variant)),
+    url: absoluteUrl(productPath(product.slug, variant.label)),
     sku: variant.sku,
     price: variant.price,
     priceCurrency: siteConfig.currency,
@@ -239,7 +232,7 @@ export function productJsonLd(
   product: Product,
   category?: Pick<Category, "name"> | null,
 ): WithContext<ProductSchema> | WithContext<ProductGroup> {
-  const url = absoluteUrl(productPath(product));
+  const url = absoluteUrl(productPath(product.slug));
   const imagesAbs = product.images.map((img) => absoluteUrl(img.src));
   const description = product.description[0] ?? product.tagline;
   const shared = {

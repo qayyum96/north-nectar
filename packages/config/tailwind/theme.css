@@ -82,7 +82,7 @@
   --text-md: 0.9375rem; /* 15px */
   --text-md--line-height: 1.55;
   --text-base: 1rem; /* 16px */
-  --text-base--line-height: 1.6;
+  --text-base--line-height: 1.5; /* mockup base: 16px / 1.5 */
   --text-lg: 1.0625rem; /* 17px */
   --text-lg--line-height: 1.6;
   --text-xl: 1.1875rem; /* 19px, lead paragraphs */
@@ -143,6 +143,32 @@
     to {
       translate: 6px -14px;
       rotate: 9deg;
+    }
+  }
+
+  /* Hero entrance (from the mockup): headline lines rise in, image pills pop in. */
+  --animate-line-up: line-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  --animate-pill-pop: pill-pop 0.7s cubic-bezier(0.3, 1.4, 0.5, 1) backwards;
+
+  @keyframes line-up {
+    from {
+      opacity: 0;
+      transform: translateY(48px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pill-pop {
+    from {
+      opacity: 0;
+      scale: 0.6;
+    }
+    to {
+      opacity: 1;
+      scale: 1;
     }
   }
 

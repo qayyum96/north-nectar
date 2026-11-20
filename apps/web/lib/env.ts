@@ -25,3 +25,9 @@ export const env = parsed.data;
 
 /** Search engines may index the site only in production. */
 export const isIndexable = env.NEXT_PUBLIC_SITE_ENV === "production";
+
+/**
+ * Placeholder content (e.g. sample testimonials from the mockup) is shown on development and
+ * preview builds only, never on the live site.
+ */
+export const showPlaceholderContent = env.NEXT_PUBLIC_SITE_ENV !== "production";

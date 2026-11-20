@@ -1,4 +1,7 @@
 {
   "extends": "@northnectar/config/tsconfig/library.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
   "include": ["src"]
 }

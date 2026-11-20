@@ -15,6 +15,8 @@ const config = [
   {
     rules: {
       ...jsxA11y.flatConfigs.recommended.rules,
+      // Styled radio cards nest their visible text one level deeper than the default (2).
+      "jsx-a11y/label-has-associated-control": ["error", { depth: 3 }],
       "@typescript-eslint/consistent-type-imports": ["error", { fixStyle: "inline-type-imports" }],
       "@typescript-eslint/no-unused-vars": [
         "error",

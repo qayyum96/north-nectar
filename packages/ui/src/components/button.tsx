@@ -49,7 +49,7 @@ export function buttonVariants({
   className,
 }: ButtonStyleOptions = {}) {
   return cn(
-    "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 font-bold whitespace-nowrap transition-colors duration-200 select-none",
+    "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 font-bold whitespace-nowrap transition-colors duration-200 select-none [&_svg]:shrink-0",
     "disabled:pointer-events-none disabled:opacity-55 aria-disabled:pointer-events-none aria-disabled:opacity-55",
     variant !== "link" && sizes[size],
     variants[variant],

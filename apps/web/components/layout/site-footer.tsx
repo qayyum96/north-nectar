@@ -5,13 +5,9 @@ import type { ComponentType } from "react";
 import { footerCopy } from "@/content/site";
 import { paymentBadges } from "@/lib/constants/commerce";
 import { images } from "@/lib/images";
-import {
-  footerCompanyLinks,
-  footerHelpLinks,
-  getFooterShopLinks,
-  type NavLink,
-} from "@/lib/navigation";
-import { siteConfig, type SocialId } from "@/lib/seo/config";
+import { getFooterShopLinks } from "@/lib/navigation";
+import { footerCompanyLinks, footerHelpLinks, type NavLink } from "@/lib/routes";
+import { activeSocialLinks, siteConfig, type SocialId } from "@/lib/seo/config";
 import { NewsletterBand } from "./newsletter-band";
 
 const socialIcons: Record<SocialId, ComponentType<{ size?: number }>> = {
@@ -21,52 +17,57 @@ const socialIcons: Record<SocialId, ComponentType<{ size?: number }>> = {
   whatsapp: ChatIcon,
 };
 
+/** Footer link: 15px text, 12px apart (mockup); the ::before widens the tap area without overlap. */
+const footerLink =
+  "relative inline-block self-start text-[15px] leading-[23px] text-[#e6dcc6] before:absolute before:-inset-y-[6px] before:inset-x-0 before:content-[''] hover:text-white hover:underline";
+
+const columnTitle =
+  "m-0 font-display text-[15px] leading-[23px] font-bold tracking-[0.06em] text-[#d1ae6c] uppercase";
+
 function FooterColumn({ title, links }: { title: string; links: NavLink[] }) {
   return (
-    <div>
-      <h2 className="font-display text-lg font-semibold tracking-wide text-gold-400 uppercase">
-        {title}
-      </h2>
-      <ul className="mt-3">
+    <nav aria-label={title} className="flex flex-col gap-3">
+      <h2 className={columnTitle}>{title}</h2>
+      <ul className="m-0 flex list-none flex-col gap-3 p-0">
         {links.map((link) => (
-          <li key={link.label}>
-            <Link
-              href={link.href}
-              className="inline-flex min-h-11 min-w-11 items-center text-md text-sand-100 hover:text-white hover:underline"
-            >
+          <li key={link.label} className="flex">
+            <Link href={link.href} className={footerLink}>
               {link.label}
             </Link>
           </li>
         ))}
       </ul>
-    </div>
+    </nav>
   );
 }
 
+/** Site footer, mockup values (mobile base, `md:` desktop). */
 export async function SiteFooter({ newsletter }: { newsletter: "light" | "dark" | "none" }) {
   const shopLinks = await getFooterShopLinks();
+  const socialLinks = activeSocialLinks();
   const { logoStackedCream } = images.brand;
   const year = new Date().getFullYear();
 
   return (
     <footer className="on-dark">
       {newsletter !== "none" ? <NewsletterBand tone={newsletter} /> : null}
-      <div className="relative overflow-hidden bg-forest-800 text-kraft">
+      <div className="relative overflow-hidden bg-[#1a3a23] text-[#efe2c4]">
         <Image
           src={images.decor.mountainsCream.src}
           width={images.decor.mountainsCream.width}
           height={images.decor.mountainsCream.height}
           alt=""
           unoptimized
-          className="pointer-events-none absolute -right-28 bottom-0 w-[32rem] max-w-none opacity-[0.12] lg:right-0 lg:w-[47rem]"
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-[120px] -bottom-[10px] h-auto w-[520px] max-w-none opacity-[0.08] md:right-0 md:w-[760px]"
         />
-        <div className="relative mx-auto max-w-site px-4 pt-12 pb-8 sm:px-6 lg:px-8 lg:pt-16">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-[1.6fr_repeat(4,minmax(0,1fr))]">
-            <div className="col-span-2 lg:col-span-1">
+        <div className="relative mx-auto flex max-w-site flex-col gap-12 px-5 pt-12 pb-8 md:px-8 md:pt-16">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-[1.6fr_repeat(4,minmax(0,1fr))]">
+            <div className="col-span-full flex flex-col gap-[18px] md:col-span-1">
               <Link
                 href="/"
                 aria-label={`${siteConfig.name}, home`}
-                className="inline-block rounded-lg"
+                className="self-start rounded-lg"
               >
                 <Image
                   src={logoStackedCream.src}
@@ -74,61 +75,64 @@ export async function SiteFooter({ newsletter }: { newsletter: "light" | "dark" 
                   height={logoStackedCream.height}
                   alt=""
                   unoptimized
-                  className="h-auto w-48"
+                  className="block h-auto w-[200px]"
                 />
               </Link>
-              <p className="mt-5 max-w-xs text-md leading-relaxed">{footerCopy.blurb}</p>
-              <ul className="mt-6 flex gap-2.5" aria-label="North Nectar on social media">
-                {siteConfig.social.map((social) => {
-                  const Icon = socialIcons[social.id];
-                  return (
-                    <li key={social.id}>
-                      <a
-                        href={social.href}
-                        aria-label={social.label}
-                        className="grid size-12 place-items-center rounded-full border border-white/20 text-sand-100 transition-colors hover:border-gold-400 hover:text-gold-400"
-                      >
-                        <Icon size={18} />
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
+              <p className="m-0 max-w-[300px] text-[15px] leading-[1.6] text-[#cdbf9f]">
+                {footerCopy.blurb}
+              </p>
+              {socialLinks.length > 0 ? (
+                <ul
+                  className="m-0 flex list-none gap-2 p-0"
+                  aria-label="North Nectar on social media"
+                >
+                  {socialLinks.map((social) => {
+                    const Icon = socialIcons[social.id];
+                    return (
+                      <li key={social.id}>
+                        <a
+                          href={social.href}
+                          aria-label={`North Nectar on ${social.label}`}
+                          className="inline-flex size-11 items-center justify-center rounded-full border border-[#3c6146] text-[#efe2c4] hover:border-[#d1ae6c] hover:text-[#d1ae6c]"
+                        >
+                          <Icon size={18} />
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
             </div>
 
             <FooterColumn title="Shop" links={shopLinks} />
             <FooterColumn title="Help" links={footerHelpLinks} />
             <FooterColumn title="Company" links={footerCompanyLinks} />
 
-            <div className="col-span-2 sm:col-span-1">
-              <h2 className="font-display text-lg font-semibold tracking-wide text-gold-400 uppercase">
-                Get in touch
-              </h2>
-              <address className="mt-3 text-md text-sand-100 not-italic">
-                <a
-                  href={`tel:${siteConfig.contact.phoneE164}`}
-                  className="flex min-h-11 items-center hover:text-white hover:underline"
-                >
+            <div className="flex flex-col gap-3">
+              <h2 className={columnTitle}>Get in touch</h2>
+              <address className="flex flex-col gap-3 not-italic">
+                <a href={`tel:${siteConfig.contact.phoneE164}`} className={footerLink}>
                   {siteConfig.contact.phoneDisplay}
                 </a>
-                <a
-                  href={`mailto:${siteConfig.contact.email}`}
-                  className="flex min-h-11 items-center hover:text-white hover:underline"
-                >
+                <a href={`mailto:${siteConfig.contact.email}`} className={footerLink}>
                   {siteConfig.contact.email}
                 </a>
-                <p className="mt-2 max-w-60 leading-relaxed">{siteConfig.address.display}</p>
+                <span className="text-[15px] leading-[1.55] text-[#e6dcc6]">
+                  {siteConfig.address.display}
+                </span>
               </address>
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col gap-5 border-t border-white/10 pt-6 lg:flex-row lg:items-center lg:justify-between">
-            <p className="text-sm text-kraft/90">{footerCopy.copyright(year)}</p>
-            <ul className="flex flex-wrap gap-2" aria-label="Payment options">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#2f5238] pt-6">
+            <p className="m-0 text-[14px] leading-[21px] text-[#b7a987]">
+              {footerCopy.copyright(year)}
+            </p>
+            <ul className="m-0 flex list-none flex-wrap gap-2 p-0" aria-label="Payment methods">
               {paymentBadges().map((badge) => (
                 <li
                   key={badge}
-                  className="rounded-md bg-kraft px-2.5 py-1 text-sm font-semibold text-forest-950"
+                  className="rounded-[6px] bg-[#efe2c4] px-[10px] py-1 text-[14px] leading-[21px] font-semibold text-ink"
                 >
                   {badge}
                 </li>

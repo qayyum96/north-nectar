@@ -37,3 +37,5 @@ export * from "./icons";
 // Client components ("use client" inside each file)
 export { QuantityStepper } from "./components/quantity-stepper";
 export { Drawer } from "./components/drawer";
+export { Tabs } from "./components/tabs";
+export type { TabItem, TabsProps } from "./components/tabs";

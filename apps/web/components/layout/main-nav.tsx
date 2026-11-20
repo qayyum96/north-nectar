@@ -5,7 +5,7 @@ import { ArrowRightIcon, ChevronDownIcon } from "@northnectar/ui/icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
-import { primaryNav, type NavGroup, type PrimaryNavKey } from "@/lib/navigation";
+import { primaryNav, type NavGroup, type PrimaryNavKey } from "@/lib/routes";
 
 function activeKey(pathname: string): PrimaryNavKey | null {
   if (pathname === "/") return "home";
@@ -17,9 +17,8 @@ function activeKey(pathname: string): PrimaryNavKey | null {
 
 const itemClass = (active: boolean) =>
   cn(
-    "relative inline-flex h-12 items-center rounded-md px-4 text-lg font-semibold text-ink transition-colors hover:text-forest-600",
-    "after:absolute after:inset-x-4 after:-bottom-1 after:h-0.5 after:origin-left after:rounded-full after:bg-forest-600 after:transition-transform after:duration-300",
-    active ? "after:scale-x-100" : "after:scale-x-0 hover:after:scale-x-100",
+    "inline-flex h-11 items-center px-4 text-[16px] font-semibold text-ink transition-colors hover:text-forest-600",
+    active ? "shadow-[inset_0_-2px_0_#234c2e]" : "shadow-[inset_0_-2px_0_transparent]",
   );
 
 /** Desktop navigation (lg and up). The mobile equivalent is <MobileMenu />. */
@@ -133,11 +132,17 @@ function ShopMenu({
   }, [open]);
 
   return (
-    <li ref={rootRef} className="relative flex items-center">
+    <li
+      ref={rootRef}
+      className={cn(
+        "relative flex items-center",
+        active ? "shadow-[inset_0_-2px_0_#234c2e]" : "shadow-[inset_0_-2px_0_transparent]",
+      )}
+    >
       <Link
         href="/shop"
         aria-current={isPage ? "page" : active ? "true" : undefined}
-        className={cn(itemClass(active), hasGroups && "pr-1")}
+        className={cn(itemClass(false), hasGroups && "pr-[6px]")}
       >
         Shop
       </Link>
@@ -155,11 +160,11 @@ function ShopMenu({
             }
             setOpen((v) => !v);
           }}
-          className="grid size-11 cursor-pointer place-items-center rounded-md text-ink hover:text-forest-600"
+          className="inline-flex h-11 cursor-pointer items-center pr-4 text-ink hover:text-forest-600"
         >
           <span className="sr-only">Shop categories</span>
           <ChevronDownIcon
-            size={18}
+            size={16}
             className={cn("transition-transform duration-200", open && "rotate-180")}
           />
         </button>

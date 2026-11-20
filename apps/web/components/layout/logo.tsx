@@ -5,23 +5,17 @@ import { images } from "@/lib/images";
 import { siteConfig } from "@/lib/seo/config";
 
 /**
- * Emblem + wordmark lock-up. The images are decorative (alt=""), and the link carries the
- * accessible name. SVGs are served as-is (`unoptimized`); they are small and sharp at any size.
+ * Emblem + wordmark lock-up. Mockup sizes: mobile emblem 30px / wordmark 16px / gap 8px;
+ * desktop emblem 46px / wordmark 22px / tagline 14px, gap 14px.
  */
-export function Logo({
-  showTagline = true,
-  className,
-}: {
-  showTagline?: boolean;
-  className?: string;
-}) {
+export function Logo({ className }: { className?: string }) {
   const { emblemGreen, wordmarkGreen } = images.brand;
   return (
     <Link
       href="/"
       aria-label={`${siteConfig.name}, home`}
       className={cn(
-        "inline-flex min-h-11 shrink-0 items-center gap-2.5 rounded-lg lg:gap-4",
+        "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg lg:gap-[14px]",
         className,
       )}
     >
@@ -32,9 +26,9 @@ export function Logo({
         alt=""
         unoptimized
         loading="eager"
-        className="h-[30px] w-auto lg:h-11"
+        className="h-[30px] w-auto lg:h-[46px]"
       />
-      <span className="flex flex-col gap-1">
+      <span className="flex flex-col gap-[5px]">
         <Image
           src={wordmarkGreen.src}
           width={wordmarkGreen.width}
@@ -44,11 +38,9 @@ export function Logo({
           loading="eager"
           className="h-4 w-auto lg:h-[22px]"
         />
-        {showTagline ? (
-          <span className="hidden text-md leading-none tracking-wide text-sage-600 lg:block">
-            {siteConfig.tagline}
-          </span>
-        ) : null}
+        <span className="hidden text-[14px] leading-[21px] tracking-[0.04em] whitespace-nowrap text-[#4e6a52] lg:block">
+          {siteConfig.tagline}
+        </span>
       </span>
     </Link>
   );

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Motion } from "@/components/motion/motion";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 
@@ -23,6 +24,7 @@ export function StorefrontShell({
         {children}
       </main>
       <SiteFooter newsletter={newsletter} />
+      <Motion />
     </>
   );
 }

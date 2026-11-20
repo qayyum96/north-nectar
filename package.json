@@ -4,7 +4,7 @@
   "description": "North Nectar monorepo: marketing and e-commerce website, shared packages and (later) the admin portal.",
   "packageManager": "pnpm@10.34.9",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=20.9.0"
   },
   "scripts": {
     "dev": "turbo run dev --filter=@northnectar/web",
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@northnectar/config": "workspace:*",
+    "eslint": "9.39.5",
     "husky": "9.1.7",
     "lint-staged": "17.6.1",
     "prettier": "3.10.1",
@@ -28,7 +29,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [
-      "eslint --fix --no-warn-ignored",
+      "eslint --flag v10_config_lookup_from_file --fix --no-warn-ignored",
       "prettier --write"
     ],
     "*.{json,md,css,yml,yaml}": [

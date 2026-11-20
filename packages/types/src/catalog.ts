@@ -71,6 +71,8 @@ export interface Product {
   /** Primary category, used for breadcrumbs and canonical URLs. */
   categoryId: string;
   images: ImageAsset[];
+  /** Optional line illustration shown beside the description (e.g. a botanical drawing). */
+  illustration?: ImageAsset;
   variants: ProductVariant[];
   purchaseMode: PurchaseMode;
   badge?: ProductBadge | null;

@@ -5,7 +5,7 @@ import { ChatIcon, ChevronRightIcon, MailIcon, MenuIcon, PhoneIcon } from "@nort
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { primaryNav, type NavGroup } from "@/lib/navigation";
+import { primaryNav, type NavGroup } from "@/lib/routes";
 import { siteConfig } from "@/lib/seo/config";
 
 /** Mobile and tablet navigation (below lg): a left slide-out panel. */

@@ -192,3 +192,38 @@ export const BanknoteIcon = createIcon(
 export const PlayIcon = createIcon("PlayIcon", <path d="M7 4.5v15l12.5-7.5Z" />, true);
 
 export const FilterIcon = createIcon("FilterIcon", <path d="M3 6h18M6.5 12h11M10 18h4" />);
+
+/* Brewing steps (home spotlight and product "How to use") */
+export const SpoonIcon = createIcon(
+  "SpoonIcon",
+  <>
+    <ellipse cx="15.5" cy="7.5" rx="4" ry="5" transform="rotate(45 15.5 7.5)" />
+    <path d="m12.6 10.4-8.6 9" />
+  </>,
+);
+
+export const KettleIcon = createIcon(
+  "KettleIcon",
+  <>
+    <path d="M6 10h11v6a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4Z" />
+    <path d="M17 11.5h1.5a2 2 0 0 1 0 4H17" />
+    <path d="M9 3.5c0 1 1 1.3 1 2.5M12.5 3.5c0 1 1 1.3 1 2.5" />
+  </>,
+);
+
+export const TimerIcon = createIcon(
+  "TimerIcon",
+  <>
+    <circle cx="12" cy="13.5" r="7.5" />
+    <path d="M12 13.5V10M10 2.5h4M12 2.5V6" />
+  </>,
+);
+
+export const CupIcon = createIcon(
+  "CupIcon",
+  <>
+    <path d="M4.5 9.5h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z" />
+    <path d="M16.5 11h1.5a2.5 2.5 0 0 1 0 5h-1.6" />
+    <path d="M8.5 3.5c0 1.2 1 1.5 1 3M12 3.5c0 1.2 1 1.5 1 3" />
+  </>,
+);

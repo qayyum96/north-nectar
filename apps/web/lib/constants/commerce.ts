@@ -6,8 +6,10 @@ import type { DeliveryMethod, PaymentMethod } from "@northnectar/types";
  * PAYMENT METHODS ARE CONFIG-DRIVEN. To add a local card gateway or switch on Stripe later:
  *   1. set the method's `status` to "enabled" (or add a new entry),
  *   2. implement its handler in features/checkout (Phase 5 leaves a typed stub per method).
- * Status meanings: "enabled" = selectable, "coming_soon" = visible but disabled,
- * "hidden" = not shown anywhere (including footer badges).
+ * Status meanings: "enabled" = selectable at checkout and shown as a payment badge,
+ * "coming_soon" = listed at checkout but disabled (no badge), "hidden" = not shown anywhere.
+ * Payment badges (footer, cart, drawer) only ever show enabled methods, so a new gateway's badges
+ * appear automatically the moment it is enabled.
  */
 export const paymentMethods: PaymentMethod[] = [
   {
@@ -35,11 +37,11 @@ export const paymentMethods: PaymentMethod[] = [
     badges: ["JazzCash", "Easypaisa"],
   },
   {
-    // Kept for the planned Stripe / local card gateway integration. Decision pending.
+    // Planned Stripe / local card gateway. Set to "enabled" once the integration exists.
     id: "card",
     label: "Debit or credit card",
     description: "Visa and Mastercard",
-    status: "coming_soon",
+    status: "hidden",
     fee: 0,
     badges: ["Visa", "Mastercard"],
   },
@@ -78,9 +80,14 @@ export const commerceConfig = {
   },
 } as const;
 
-/** Badges for the footer, cart and drawer: every method that is not hidden, in config order. */
+/** Methods a customer can choose right now. */
+export function enabledPaymentMethods(): PaymentMethod[] {
+  return paymentMethods.filter((m) => m.status === "enabled");
+}
+
+/** Badges for the footer, cart and drawer: only selectable methods, in config order. */
 export function paymentBadges(): string[] {
-  return paymentMethods.filter((m) => m.status !== "hidden").flatMap((m) => m.badges);
+  return enabledPaymentMethods().flatMap((m) => m.badges);
 }
 
 /** Delivery fee for a subtotal and method, applying the free-delivery threshold. */

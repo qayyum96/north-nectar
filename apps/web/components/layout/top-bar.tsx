@@ -3,33 +3,32 @@ import Link from "next/link";
 import { topBar } from "@/content/site";
 import { siteConfig } from "@/lib/seo/config";
 
+/** Dark promo bar. Mockup: 40px desktop (3-column grid), 41px mobile (single centred line). */
 export function TopBar() {
   return (
-    <div className="on-dark bg-forest-800 text-sand-100">
-      <div className="mx-auto flex min-h-10 max-w-site items-center justify-center px-4 py-2 text-sm sm:px-6 lg:min-h-11 lg:justify-between lg:px-8 lg:py-0">
-        <p className="text-center lg:hidden">{topBar.mobile}</p>
-
+    <div className="on-dark bg-[#1a3a23] text-[14px] text-[#efe2c4]">
+      <p className="px-4 py-[10px] text-center leading-[21px] lg:hidden">{topBar.mobile}</p>
+      <div className="mx-auto hidden h-10 max-w-site grid-cols-[1fr_auto_1fr] items-center gap-6 px-8 lg:grid">
         <a
           href={siteConfig.contact.whatsappUrl}
-          className="hidden min-h-11 items-center gap-2 hover:underline lg:inline-flex"
+          className="inline-flex items-center gap-2 justify-self-start hover:underline"
         >
           <ChatIcon size={16} />
           {topBar.contact}
         </a>
-        <p className="hidden items-center gap-4 lg:flex">
+        <p className="inline-flex items-center gap-[14px]">
           {topBar.promos.map((promo, i) => (
-            <span key={promo} className="flex items-center gap-4">
+            <span key={promo} className="inline-flex items-center gap-[14px]">
               {i > 0 ? (
-                <span aria-hidden="true" className="size-1.5 rotate-45 bg-gold-400" />
+                <span aria-hidden="true" className="text-[#a9915e]">
+                  ◆
+                </span>
               ) : null}
               {promo}
             </span>
           ))}
         </p>
-        <Link
-          href={topBar.wholesale.href}
-          className="hidden min-h-11 items-center hover:underline lg:inline-flex"
-        >
+        <Link href={topBar.wholesale.href} className="justify-self-end hover:underline">
           {topBar.wholesale.label}
         </Link>
       </div>
