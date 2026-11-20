@@ -63,13 +63,33 @@ lib/               auth, Supabase clients, dashboard queries, Pakistan-time help
   domain and the free Resend plan are set up.
 - **Hidden until later phases:** the mockup's Import buttons (CSV import is Phase 4).
 
+## Products and categories (Phase 3)
+
+- Owners and managers only (the sidebar hides them from staff).
+- **Saving** runs the database function `admin_save_product`: the product and all its sizes are
+  saved together, a changed stock number is recorded as an "adjustment" stock movement, and a size
+  that is still in open orders can't be removed.
+- **Images** upload straight from the browser to the public Supabase Storage bucket `catalog`
+  (`products/<id>/`, `categories/<id>/`). Each photo is resized to at most 1600 px and converted to
+  WebP first, so the free 1 GB lasts. Removed images are deleted from storage when you save.
+- **Description formatting:** **bold**, _italic_, **underline**, [links](https://…) and "- " lists.
+  The website renders these safely (no raw HTML).
+- **Website details** (tagline, short name, botanical name, origin, badge, home page flags, sort
+  position, highlights, ways to enjoy, how to use, details table, size tags, related products) are
+  the storefront-only fields that the mockup's editor didn't show.
+- **Website refresh:** after every product or category change the admin calls the website's
+  `/api/revalidate` (protected by `REVALIDATE_SECRET`, same value in both apps), so changes show
+  straight away instead of within the hour.
+- Unit costs are set from purchases in Phase 4; until then Inventory value shows how many sizes
+  still need a cost.
+
 ## Phases
 
 | Phase | Scope                                                                           | Status |
 | ----- | ------------------------------------------------------------------------------- | ------ |
 | 1     | Foundation: schema, RLS, sign-in, shell, dashboard, search, website on Supabase | done   |
 | 2     | Orders, customers, messages                                                     | done   |
-| 3     | Products, categories, image upload                                              |        |
+| 3     | Products, categories, image upload                                              | done   |
 | 4     | Stock, suppliers, purchases, movements, CSV import                              |        |
 | 5     | Reports and settings (payments and shipping rates move to the database)         |        |
 | 6     | Audit                                                                           |        |

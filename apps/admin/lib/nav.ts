@@ -34,8 +34,20 @@ export const NAV: NavGroup[] = [
   {
     label: "Catalogue",
     items: [
-      { label: "Products", href: "/products", icon: "products", phase: 3 },
-      { label: "Categories", href: "/categories", icon: "categories", phase: 3 },
+      {
+        label: "Products",
+        href: "/products",
+        icon: "products",
+        roles: ["owner", "manager"],
+        phase: 3,
+      },
+      {
+        label: "Categories",
+        href: "/categories",
+        icon: "categories",
+        roles: ["owner", "manager"],
+        phase: 3,
+      },
     ],
   },
   {

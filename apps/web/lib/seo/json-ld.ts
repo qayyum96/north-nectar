@@ -1,4 +1,5 @@
 import type { Category, Product, ProductVariant } from "@northnectar/types";
+import { plainText } from "@northnectar/ui";
 import type {
   BreadcrumbList,
   FAQPage,
@@ -234,7 +235,7 @@ export function productJsonLd(
 ): WithContext<ProductSchema> | WithContext<ProductGroup> {
   const url = absoluteUrl(productPath(product.slug));
   const imagesAbs = product.images.map((img) => absoluteUrl(img.src));
-  const description = product.description[0] ?? product.tagline;
+  const description = product.description[0] ? plainText(product.description[0]) : product.tagline;
   const shared = {
     name: product.name,
     description,

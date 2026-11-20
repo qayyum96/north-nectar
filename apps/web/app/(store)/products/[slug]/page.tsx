@@ -1,5 +1,6 @@
 import { BanknoteIcon, GiftIcon, TruckIcon } from "@northnectar/ui/icons";
 import type { Metadata } from "next";
+import { plainText, RichParagraph } from "@northnectar/ui";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -39,7 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildMetadata({
     title: product.seo?.title ?? product.name,
     description:
-      product.seo?.description ?? `${product.tagline} ${product.description[0] ?? ""}`.trim(),
+      product.seo?.description ??
+      `${product.tagline} ${plainText(product.description[0] ?? "")}`.trim(),
     path: productPath(product.slug),
     image: {
       url: `/og/product/${product.slug}`,
@@ -79,7 +81,10 @@ export default async function ProductPage({ params }: Props) {
   ];
 
   const description = (
-    <p className="m-0 text-[17px] leading-[1.65] text-[#3f4a40]">{product.description[0]}</p>
+    <RichParagraph
+      className="text-[17px] leading-[1.65] text-[#3f4a40]"
+      text={product.description[0] ?? ""}
+    />
   );
 
   return (

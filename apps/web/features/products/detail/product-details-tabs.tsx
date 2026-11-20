@@ -1,5 +1,5 @@
 import type { Product } from "@northnectar/types";
-import { Tabs, type TabItem } from "@northnectar/ui";
+import { Tabs, type TabItem, RichParagraph } from "@northnectar/ui";
 import Image from "next/image";
 import { productContent } from "@/content/product";
 
@@ -18,16 +18,8 @@ export function ProductDetailsTabs({ product }: { product: Product }) {
         <h2 className="sr-only">Description</h2>
         <div className="flex flex-[1_1_460px] flex-col gap-4 text-[17px] leading-[1.75] text-[#3f4a40]">
           {product.description.slice(1).length > 0
-            ? product.description.slice(1).map((p) => (
-                <p key={p} className="m-0">
-                  {p}
-                </p>
-              ))
-            : product.description.map((p) => (
-                <p key={p} className="m-0">
-                  {p}
-                </p>
-              ))}
+            ? product.description.slice(1).map((p) => <RichParagraph key={p} text={p} />)
+            : product.description.map((p) => <RichParagraph key={p} text={p} />)}
         </div>
         {product.illustration ? (
           <div className="flex flex-[1_1_360px] justify-center">

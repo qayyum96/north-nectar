@@ -29,6 +29,11 @@ export class SupabaseCatalogRepository implements CatalogRepository {
     private readonly options: SupabaseRepositoryOptions = {},
   ) {}
 
+  clearCache() {
+    this.snapshot = null;
+    this.loadedAt = 0;
+  }
+
   private load(): Promise<SeedCatalogRepository> {
     const maxAge = this.options.cacheMs ?? 60_000;
     if (!this.snapshot || Date.now() - this.loadedAt > maxAge) {

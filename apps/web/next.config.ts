@@ -7,6 +7,11 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
 ];
 
+// Product and category images uploaded in the admin live in Supabase Storage.
+const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+  : null;
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -19,8 +24,9 @@ const nextConfig: NextConfig = {
     // Product imagery is mostly square; these widths cover cards (2 to 4 columns) and galleries.
     deviceSizes: [360, 414, 640, 768, 1024, 1280, 1536],
     imageSizes: [48, 64, 96, 128, 160, 256, 320],
-    // TODO(supabase): add the Supabase Storage host here when product images move there, e.g.
-    // remotePatterns: [{ protocol: "https", hostname: "<project>.supabase.co", pathname: "/storage/v1/object/public/**" }],
+    remotePatterns: supabaseHost
+      ? [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/**" }]
+      : [],
   },
   experimental: {
     optimizePackageImports: ["@northnectar/ui"],

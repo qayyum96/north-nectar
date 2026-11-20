@@ -6,6 +6,7 @@ import { SpotlightPurchase } from "@/features/products/spotlight-purchase";
 import { StepsList } from "@/features/products/steps-list";
 import { toPurchasable } from "@/features/products/purchasable";
 import { images } from "@/lib/images";
+import { RichParagraph } from "@northnectar/ui";
 
 /** Signature product spotlight + brewing card (mockup values; mobile base, `md:` desktop). */
 export function ProductSpotlight({ product }: { product: Product | null }) {
@@ -58,9 +59,10 @@ export function ProductSpotlight({ product }: { product: Product | null }) {
             <p className="m-0 text-[17px] leading-[26px] text-[#4e6a52] italic">
               {spotlight.subtitle}
             </p>
-            <p className="m-0 text-[17px] leading-[1.7] text-[#4b473d]">
-              {spotlight.description ?? product.description[0]}
-            </p>
+            <RichParagraph
+              className="text-[17px] leading-[1.7] text-[#4b473d]"
+              text={spotlight.description ?? product.description[0] ?? ""}
+            />
             <ul className="m-0 flex list-none flex-col gap-[10px] p-0">
               {product.highlights.map((point) => (
                 <li

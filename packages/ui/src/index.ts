@@ -1,6 +1,7 @@
 // Utilities
 export { cn } from "./lib/cn";
 export { formatPkr, formatPricePer100g } from "./lib/format";
+export { RichParagraph, plainText, renderInline } from "./lib/rich-text";
 
 // Primitives (server-safe)
 export { Button, buttonVariants } from "./components/button";

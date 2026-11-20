@@ -33,4 +33,6 @@ export interface CatalogRepository {
   getCategoryBySlug(slug: string): Promise<Category | null>;
   /** Number of active products per category slug (for filter chips). */
   getProductCountsByCategory(): Promise<Record<string, number>>;
+  /** Drops any cached catalogue so the next read is fresh (called when the admin saves). */
+  clearCache?(): void;
 }

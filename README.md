@@ -60,6 +60,7 @@ See [`apps/web/.env.example`](apps/web/.env.example) and [`apps/admin/.env.examp
 | `SUPABASE_SERVICE_ROLE_KEY`                                  | Supabase secret key, server only (orders, messages, newsletter)                               |
 | `SUPABASE_DB_URL`                                            | Session pooler connection string, only for the `db:*` scripts                                 |
 | `NEXT_PUBLIC_STOREFRONT_URL`                                 | Admin only: website address for store links and product images                                |
+| `REVALIDATE_SECRET`                                          | Same random value in both apps; lets the admin refresh the website after catalogue changes    |
 
 Placeholder content (such as the mockup's sample customer reviews) only appears when
 `NEXT_PUBLIC_SITE_ENV` is not `production`.
