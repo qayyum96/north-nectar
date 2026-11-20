@@ -20,7 +20,7 @@ export const metadata: Metadata = { title: "Search" };
 /** Characters with meaning in PostgREST filters are dropped from the search text. */
 const clean = (q: string) =>
   q
-    .replace(/[,()*%\\]/g, " ")
+    .replace(/[,()*%\\:"]/g, " ")
     .trim()
     .slice(0, 80);
 

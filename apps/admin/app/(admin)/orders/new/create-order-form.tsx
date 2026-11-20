@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  type CommerceSettings,
+  deliveryOptions,
+  zoneFor,
+} from "@northnectar/data/commerce-settings";
 import { cn, formatPkr } from "@northnectar/ui";
 import Image from "next/image";
 import Link from "next/link";
@@ -45,9 +50,9 @@ const PROVINCES = [
   "Azad Kashmir",
 ];
 const DELIVERY = [
-  { id: "standard", label: "Standard delivery", fee: 250, freeOver: 5000 },
-  { id: "express", label: "Express delivery", fee: 450, freeOver: null },
-  { id: "pickup", label: "Pickup (no delivery)", fee: 0, freeOver: null },
+  { id: "standard", label: "Standard delivery" },
+  { id: "express", label: "Express delivery" },
+  { id: "pickup", label: "Pickup (no delivery)" },
 ] as const;
 const PAYMENTS = [
   { id: "cod", label: "Cash on delivery" },
@@ -59,19 +64,30 @@ const PAYMENTS = [
 type DeliveryId = (typeof DELIVERY)[number]["id"];
 type PaymentId = (typeof PAYMENTS)[number]["id"];
 
-const fee = (method: DeliveryId, subtotal: number) => {
-  const d = DELIVERY.find((x) => x.id === method)!;
-  if (d.freeOver !== null && subtotal >= d.freeOver) return 0;
-  return d.fee;
+/** Same rates as the website checkout (Settings > Shipping): by city, then province, then the rest. */
+const fee = (
+  settings: CommerceSettings,
+  method: DeliveryId,
+  subtotal: number,
+  city: string,
+  province: string,
+) => {
+  if (method === "pickup") return 0;
+  return (
+    deliveryOptions(settings, { city, province, amount: subtotal }).find((o) => o.id === method)
+      ?.fee ?? 0
+  );
 };
 
 export function CreateOrderForm({
   variants,
   customers,
+  settings,
   initialCustomerId,
 }: {
   variants: PickVariant[];
   customers: PickCustomer[];
+  settings: CommerceSettings;
   initialCustomerId?: string;
 }) {
   const router = useRouter();
@@ -104,7 +120,8 @@ export function CreateOrderForm({
 
   const byId = useMemo(() => new Map(variants.map((v) => [v.id, v])), [variants]);
   const subtotal = lines.reduce((s, l) => s + (byId.get(l.variantId)?.price ?? 0) * l.quantity, 0);
-  const deliveryFee = feeOverride ?? fee(delivery, subtotal);
+  const deliveryFee = feeOverride ?? fee(settings, delivery, subtotal, a.city, a.province);
+  const zone = zoneFor(settings, a.city, a.province);
   const total = subtotal + deliveryFee;
   const units = lines.reduce((s, l) => s + l.quantity, 0);
 
@@ -293,7 +310,7 @@ export function CreateOrderForm({
                   setFeeOverride(null);
                 }}
               >
-                {DELIVERY.map((d) => (
+                {DELIVERY.filter((d) => d.id !== "express" || settings.express.enabled).map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.label}
                   </option>
@@ -306,7 +323,9 @@ export function CreateOrderForm({
               hint={
                 feeOverride === null
                   ? delivery === "standard"
-                    ? "Free over Rs 5,000, like the website"
+                    ? `${zone.isFallback ? "Rest of Pakistan" : zone.name} rate${
+                        zone.freeOver !== null ? `, free over ${formatPkr(zone.freeOver)}` : ""
+                      }, like the website`
                     : undefined
                   : "Changed by hand"
               }

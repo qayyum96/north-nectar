@@ -327,15 +327,21 @@ export function TeamForm({ members }: { members: MemberView[] }) {
                           <RowMenu
                             label={`More actions for ${m.name}`}
                             actions={[
-                              {
-                                label: m.invited ? "New invite link" : "Password reset link",
-                                onSelect: () =>
-                                  start(async () => {
-                                    const r = await newInviteLink(m.userId);
-                                    if (!r.ok) return toast.error(r.error);
-                                    setLinkFor({ name: m.name, link: r.link });
-                                  }),
-                              },
+                              // Links only for people who haven't joined yet; members who have
+                              // use "Forgot password" themselves.
+                              ...(m.invited
+                                ? [
+                                    {
+                                      label: "New invite link",
+                                      onSelect: () =>
+                                        start(async () => {
+                                          const r = await newInviteLink(m.userId);
+                                          if (!r.ok) return toast.error(r.error);
+                                          setLinkFor({ name: m.name, link: r.link });
+                                        }),
+                                    },
+                                  ]
+                                : []),
                               { label: "Remove", danger: true, onSelect: () => setRemoving(m) },
                             ]}
                           />

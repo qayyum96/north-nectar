@@ -18,6 +18,7 @@ import { requireStaff } from "@/lib/auth";
 import { loadCustomer } from "@/lib/customers";
 import { dateLabel, formatPhone, formatPkr, plural, whatsappLink } from "@/lib/format";
 import { addressLines, linesSummary } from "@/lib/orders";
+import { noSept } from "@/lib/time";
 import { EditCustomerButton } from "../customer-dialog";
 
 export const metadata: Metadata = { title: "Customer" };
@@ -37,11 +38,13 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
   );
   const average = c.orders_count ? Math.round(c.total_spent / Math.max(1, c.orders_count)) : 0;
   const lastDay = c.last_order_at
-    ? new Intl.DateTimeFormat("en-GB", {
-        timeZone: "Asia/Karachi",
-        day: "numeric",
-        month: "short",
-      }).format(new Date(c.last_order_at))
+    ? noSept(
+        new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Asia/Karachi",
+          day: "numeric",
+          month: "short",
+        }).format(new Date(c.last_order_at)),
+      )
     : "None";
   const address = addressLines(c.default_address);
 

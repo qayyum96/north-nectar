@@ -211,10 +211,18 @@ export function matchSize(
   const bySku = sizes.find((s) => s.sku.toLowerCase() === t.toLowerCase());
   if (bySku) return { id: bySku.id, label: `${bySku.short} · ${bySku.label}` };
   const n = norm(t);
-  const compact = n.replace(/\s+/g, "");
+  // Sizes written in the text ("250g", "250 gm", "1 kg"), compared whole: "250g" is not "50g".
+  const written = new Set(
+    [...t.toLowerCase().matchAll(/(\d+(?:\.\d+)?)\s*(kg|g|gms?|grams?|ml|l)\b/g)].map((m) =>
+      sizeKey(`${m[1]}${m[2]}`),
+    ),
+  );
   const candidates = sizes.filter((s) => {
     const label = sizeKey(s.label);
-    if (!compact.includes(label)) return false;
+    const sizeFound = /^\d/.test(label)
+      ? written.has(label)
+      : new RegExp(`(^|\\s)${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\s|$)`).test(n);
+    if (!sizeFound) return false;
     const words = [
       ...new Set(
         `${s.product} ${s.short}`

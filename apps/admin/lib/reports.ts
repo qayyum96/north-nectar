@@ -1,4 +1,5 @@
 import "server-only";
+import { fetchAll } from "@/lib/fetch-all";
 import { createClient } from "@/lib/supabase/server";
 import type { DashboardRange } from "./dashboard";
 import { loadStock } from "./inventory";
@@ -66,31 +67,37 @@ export async function loadReports(range: DashboardRange, now = new Date()) {
   const dayKey = (d: Date) =>
     new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Karachi" }).format(d);
 
-  const [ordersRes, purchasesRes, owingRes, stock] = await Promise.all([
-    supabase
-      .from("orders")
-      .select(
-        "total, subtotal, discount, fulfilment_status, created_at, shipping_address, lines:order_lines(variant_id, name, variant_label, quantity, line_total, unit_cost)",
-      )
-      .neq("fulfilment_status", "cancelled")
-      .gte("created_at", from.toISOString())
-      .lt("created_at", new Date(Math.max(range.end.getTime(), end.getTime())).toISOString())
-      .limit(20000),
-    supabase
-      .from("purchases")
-      .select(
-        "total, amount_paid, purchase_date, supplier_id, supplier:suppliers(name), lines:purchase_lines(variant_id, quantity, line_total)",
-      )
-      .gte("purchase_date", dayKey(from))
-      .limit(10000),
-    supabase.from("purchases").select("total, amount_paid, supplier_id"),
+  // Every page of rows: Supabase returns at most 1,000 per request.
+  const [orders, purchases, allPurchases, stock] = await Promise.all([
+    fetchAll<OrderRow>((a, b) =>
+      supabase
+        .from("orders")
+        .select(
+          "total, subtotal, discount, fulfilment_status, created_at, shipping_address, lines:order_lines(variant_id, name, variant_label, quantity, line_total, unit_cost)",
+        )
+        .neq("fulfilment_status", "cancelled")
+        .gte("created_at", from.toISOString())
+        .lt("created_at", new Date(Math.max(range.end.getTime(), end.getTime())).toISOString())
+        .order("created_at")
+        .order("id")
+        .range(a, b),
+    ),
+    fetchAll<PurchaseRow>((a, b) =>
+      supabase
+        .from("purchases")
+        .select(
+          "total, amount_paid, purchase_date, supplier_id, supplier:suppliers(name), lines:purchase_lines(variant_id, quantity, line_total)",
+        )
+        .gte("purchase_date", dayKey(from))
+        .order("id")
+        .range(a, b),
+    ),
+    fetchAll<{ total: number; amount_paid: number; supplier_id: string | null }>((a, b) =>
+      supabase.from("purchases").select("total, amount_paid, supplier_id").order("id").range(a, b),
+    ),
     loadStock(),
   ]);
-  const orders = (ordersRes.data ?? []) as unknown as OrderRow[];
-  const purchases = (purchasesRes.data ?? []) as unknown as PurchaseRow[];
-  const owing = (
-    (owingRes.data ?? []) as { total: number; amount_paid: number; supplier_id: string | null }[]
-  ).filter((p) => p.amount_paid < p.total);
+  const owing = allPurchases.filter((p) => p.amount_paid < p.total);
   const sizeName = new Map(stock.map((s) => [s.id, `${s.product} · ${s.label}`]));
   const shortName = new Map(stock.map((s) => [s.id, `${s.productShort} ${s.label}`]));
 
@@ -157,16 +164,20 @@ export async function loadReports(range: DashboardRange, now = new Date()) {
       }
     return [...m.values()];
   };
-  const sizes = bySize(cur);
-  const sizesPrev = bySize(prev);
+  // Profit and product figures leave out returned (refunded) orders; Sales shows them as Returns.
+  const kept = (o: OrderRow) => o.fulfilment_status !== "returned";
+  const curKept = cur.filter(kept);
+  const prevKept = prev.filter(kept);
+  const sizes = bySize(curKept);
+  const sizesPrev = bySize(prevKept);
   const units = sizes.reduce((s, r) => s + r.units, 0);
   const unitsPrev = sizesPrev.reduce((s, r) => s + r.units, 0);
   const costKnown = sizes.every((r) => r.costKnown);
   const cogs = sizes.reduce((s, r) => s + r.cost, 0);
-  const revenue = cur.reduce((s, o) => s + o.subtotal - o.discount, 0);
+  const revenue = curKept.reduce((s, o) => s + o.subtotal - o.discount, 0);
   const profit = revenue - cogs;
   const prevCostKnown = sizesPrev.every((r) => r.costKnown);
-  const revenuePrev = prev.reduce((s, o) => s + o.subtotal - o.discount, 0);
+  const revenuePrev = prevKept.reduce((s, o) => s + o.subtotal - o.discount, 0);
   const profitPrev = revenuePrev - sizesPrev.reduce((s, r) => s + r.cost, 0);
   const margin = revenue > 0 ? Math.round((profit / revenue) * 1000) / 10 : null;
   const marginPrev = revenuePrev > 0 ? Math.round((profitPrev / revenuePrev) * 1000) / 10 : null;
@@ -255,7 +266,7 @@ export async function loadReports(range: DashboardRange, now = new Date()) {
           : null,
       costKnown,
       missingCosts: sizes.filter((r) => !r.costKnown).length,
-      weekly: weekly(orders, (o) => o.created_at, lineProfit),
+      weekly: weekly(orders.filter(kept), (o) => o.created_at, lineProfit),
       byProduct: sizes
         .map((r) => ({
           label: r.label,
@@ -280,7 +291,7 @@ export async function loadReports(range: DashboardRange, now = new Date()) {
         : null,
       sellThrough: units + available > 0 ? Math.round((units / (units + available)) * 100) : null,
       weekly: weekly(
-        orders,
+        orders.filter(kept),
         (o) => o.created_at,
         (o) => o.lines.reduce((s, l) => s + l.quantity, 0),
       ),

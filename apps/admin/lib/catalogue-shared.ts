@@ -18,6 +18,8 @@ export interface VariantForm {
   compare: string;
   sku: string;
   stock: string;
+  /** Stock when the editor loaded (null for a new size); the database refuses the save if it moved. */
+  loadedStock: number | null;
   /** Shipping weight in grams (with packaging). */
   weight: string;
   tag: string;

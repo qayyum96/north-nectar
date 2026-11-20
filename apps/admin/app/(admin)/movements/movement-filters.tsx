@@ -5,14 +5,17 @@ import { useState, useTransition } from "react";
 import { Icon } from "@/components/icon";
 import { Popover, PopoverItem } from "@/components/menus";
 import { buttonStyles, fieldStyles } from "@/components/ui";
+import { noSept } from "@/lib/time";
 
 const fmt = (iso: string, withYear: boolean) =>
-  new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    ...(withYear ? { year: "numeric" } : {}),
-    timeZone: "UTC",
-  }).format(new Date(`${iso}T00:00:00Z`));
+  noSept(
+    new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      ...(withYear ? { year: "numeric" } : {}),
+      timeZone: "UTC",
+    }).format(new Date(`${iso}T00:00:00Z`)),
+  );
 
 /** Date range ("21 Oct to 20 Nov 2026") and product filter for the movements ledger. */
 export function MovementFilters({

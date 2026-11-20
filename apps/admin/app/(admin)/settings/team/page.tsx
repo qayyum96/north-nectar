@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { initials, requireStaff } from "@/lib/auth";
 import { loadTeam } from "@/lib/settings";
+import { noSept } from "@/lib/time";
 import { TeamForm } from "./team-form";
 
 export const metadata: Metadata = { title: "Team and roles" };
@@ -9,7 +10,7 @@ function lastActive(iso: string | null, invitedAt: string | null, invited: boole
   if (invited) {
     const d = invitedAt ? new Date(invitedAt) : null;
     return d
-      ? `Invite sent ${new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "Asia/Karachi" }).format(d)}`
+      ? `Invite sent ${noSept(new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "Asia/Karachi" }).format(d))}`
       : "Invited";
   }
   if (!iso) return "Not yet";
@@ -18,11 +19,13 @@ function lastActive(iso: string | null, invitedAt: string | null, invited: boole
   if (minutes < 60) return `${Math.round(minutes)} minutes ago`;
   if (minutes < 24 * 60) return `${Math.round(minutes / 60)} hours ago`;
   if (minutes < 48 * 60) return "Yesterday";
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    timeZone: "Asia/Karachi",
-  }).format(new Date(iso));
+  return noSept(
+    new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      timeZone: "Asia/Karachi",
+    }).format(new Date(iso)),
+  );
 }
 
 export default async function TeamSettingsPage() {

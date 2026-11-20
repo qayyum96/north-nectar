@@ -49,7 +49,8 @@ function AdjustDrawer({
   const [id, setId] = useState(initialId ?? "");
   const row = rows.find((r) => r.id === id) ?? null;
   const [mode, setMode] = useState<"add" | "remove" | "set">("remove");
-  const [qty, setQty] = useState(1);
+  // Starts at 0 so changing only the low-stock level or cost never moves stock by accident.
+  const [qty, setQty] = useState(0);
   const [reason, setReason] = useState("Damaged");
   const [note, setNote] = useState("");
   const [reorder, setReorder] = useState(row ? String(row.reorderAt) : "");
@@ -83,18 +84,23 @@ function AdjustDrawer({
   const save = () =>
     row &&
     start(async () => {
+      const costChanged = cost !== (row.unitCost != null ? String(row.unitCost) : "");
+      // Only send what changed: a settings-only save must not write back the stock count (or
+      // cost) this page loaded, which a purchase or order may have changed since.
       const result = await adjustStock({
         variantId: row.id,
-        mode,
-        quantity: quantityChanged ? qty : mode === "set" ? row.stock : 0,
+        mode: quantityChanged ? mode : "add",
+        quantity: quantityChanged ? qty : 0,
         reason,
         note,
-        reorderAt: reorder.trim() === "" ? null : Math.max(0, Math.round(Number(reorder) || 0)),
-        unitCost:
-          cost.trim() === ""
-            ? row.unitCost != null
-              ? -1
-              : null
+        reorderAt:
+          reorder.trim() === "" || reorder === String(row.reorderAt)
+            ? null
+            : Math.max(0, Math.round(Number(reorder) || 0)),
+        unitCost: !costChanged
+          ? null
+          : cost.trim() === ""
+            ? -1
             : Math.max(0, Math.round(Number(cost.replace(/,/g, "")) || 0)),
       });
       if (!result.ok) return toast.error(result.error);

@@ -1,4 +1,4 @@
-import { addDays, startOfDayPk } from "./time";
+import { addDays, isDay, startOfDayPk } from "./time";
 
 /**
  * Date range from an export dialog: today | 7d | 30d | custom (from/to as YYYY-MM-DD) | all.
@@ -17,12 +17,11 @@ export function exportRange(params: URLSearchParams): {
   if (range === "30d")
     return { from: addDays(today, -29).toISOString(), to: null, label: "last 30 days" };
   if (range === "custom") {
-    const iso = /^\d{4}-\d{2}-\d{2}$/;
     const f = params.get("from");
     const t = params.get("to");
     return {
-      from: f && iso.test(f) ? new Date(`${f}T00:00:00+05:00`).toISOString() : null,
-      to: t && iso.test(t) ? addDays(new Date(`${t}T00:00:00+05:00`), 1).toISOString() : null,
+      from: f && isDay(f) ? new Date(`${f}T00:00:00+05:00`).toISOString() : null,
+      to: t && isDay(t) ? addDays(new Date(`${t}T00:00:00+05:00`), 1).toISOString() : null,
       label: [f, t].filter(Boolean).join(" to ") || "all time",
     };
   }

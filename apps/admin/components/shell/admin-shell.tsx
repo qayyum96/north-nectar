@@ -294,12 +294,13 @@ export function AdminShell({
                   type="button"
                   onClick={toggle}
                   aria-expanded={open}
-                  aria-label="Account menu"
+                  // Starts with the visible text, so voice control ("click Qayyum") finds it.
+                  aria-label={`${staff.initials} ${staff.name.split(" ")[0]}, account menu`}
                   className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-[10px] border-0 bg-transparent px-[6px] text-[14px] text-white hover:bg-white/10"
                 >
                   <span className="inline-flex size-[30px] items-center justify-center rounded-[8px] bg-[#2f7d45] font-bold">
                     {staff.initials}
-                  </span>
+                  </span>{" "}
                   <span className="hidden font-semibold md:inline">{staff.name.split(" ")[0]}</span>
                 </button>
               )}

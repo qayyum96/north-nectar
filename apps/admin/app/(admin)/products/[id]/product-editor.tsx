@@ -104,7 +104,7 @@ function DescriptionEditor({ value, onChange }: { value: string; onChange: (v: s
   };
 
   const tool =
-    "cursor-pointer rounded-[6px] border-0 bg-transparent px-2 py-1 text-[14px] hover:bg-[#ececea]";
+    "min-h-7 min-w-7 cursor-pointer rounded-[6px] border-0 bg-transparent px-2 py-1 text-[14px] hover:bg-[#ececea]";
   return (
     <div className="overflow-hidden rounded-[10px] border border-[#d4d4d1] focus-within:border-forest-600">
       <div
@@ -448,6 +448,7 @@ function VariantsCard({
               compare: "",
               sku: "",
               stock: "0",
+              loadedStock: null,
               weight: "",
               tag: "",
               isDefault: false,

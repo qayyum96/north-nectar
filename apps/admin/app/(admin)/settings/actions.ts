@@ -77,13 +77,23 @@ const paymentsSchema = z
       });
     if (
       p.bank_transfer.enabled &&
-      (!p.bank_transfer.bankName || !p.bank_transfer.iban || /^\[/.test(p.bank_transfer.iban))
+      (!p.bank_transfer.bankName ||
+        !p.bank_transfer.iban ||
+        /^\[/.test(p.bank_transfer.iban) ||
+        /^\[/.test(p.bank_transfer.bankName))
     )
       ctx.addIssue({
         code: "custom",
         path: ["bank_transfer", "iban"],
         message: "Add your bank name and IBAN, or switch bank transfer off.",
       });
+    for (const w of ["jazzcash", "easypaisa"] as const)
+      if (p[w].enabled && p[w].number.replace(/\D/g, "").length < 10)
+        ctx.addIssue({
+          code: "custom",
+          path: [w, "number"],
+          message: `Add the ${w === "jazzcash" ? "JazzCash" : "Easypaisa"} number customers pay to, or switch it off.`,
+        });
   });
 export type PaymentsInput = z.input<typeof paymentsSchema>;
 
@@ -160,57 +170,38 @@ const shippingSchema = z
   });
 export type ShippingInput = z.input<typeof shippingSchema>;
 
-export async function saveShipping(input: ShippingInput): Promise<Result> {
+export async function saveShipping(
+  input: ShippingInput,
+): Promise<{ ok: true; message: string; ids: string[] } | { ok: false; error: string }> {
   await requireStaff(["owner"]);
   const parsed = shippingSchema.safeParse(input);
   if (!parsed.success)
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Please check the rates." };
   const { zones, express } = parsed.data;
   const supabase = await createClient();
-  const { data: existing } = await supabase.from("shipping_zones").select("id");
-  const keep = new Set(zones.map((z) => z.id).filter((id) => /^[0-9a-f-]{36}$/i.test(id)));
-  const remove = ((existing ?? []) as { id: string }[])
-    .map((z) => z.id)
-    .filter((id) => !keep.has(id));
-  // Clear the fallback flag first so the "one fallback" index never blocks the swap.
-  await supabase.from("shipping_zones").update({ is_fallback: false }).eq("is_fallback", true);
-  if (remove.length) await supabase.from("shipping_zones").delete().in("id", remove);
-  const rows = zones.map((z, i) => ({
-    ...(keep.has(z.id) ? { id: z.id } : {}),
-    name: z.name,
-    cities: z.isFallback ? [] : z.cities,
-    provinces: z.isFallback ? [] : z.provinces,
-    is_fallback: false,
-    rate: z.rate,
-    free_over: z.freeOver,
-    days_min: z.daysMin,
-    days_max: z.daysMax,
-    courier: z.courier,
-    sort_order: i + 1,
-  }));
-  const { data: saved, error } = await supabase
-    .from("shipping_zones")
-    .upsert(rows, { defaultToNull: false })
-    .select("id, name");
-  if (error || !saved)
-    return { ok: false, error: "The rates couldn't be saved. Please try again." };
-  const fallbackIndex = zones.findIndex((z) => z.isFallback);
-  const fallbackId =
-    (saved as { id: string; name: string }[]).find((r, i) => i === fallbackIndex)?.id ??
-    (saved as { id: string; name: string }[]).find((r) => r.name === zones[fallbackIndex]!.name)
-      ?.id;
-  if (fallbackId)
-    await supabase.from("shipping_zones").update({ is_fallback: true }).eq("id", fallbackId);
-  const { error: expErr } = await supabase
-    .from("store_settings")
-    .update({ express })
-    .eq("id", true);
-  if (expErr) return { ok: false, error: "Express delivery couldn't be saved." };
+  // One database transaction: the zones, the "everywhere else" zone and express save together.
+  const { data: ids, error } = await supabase.rpc("admin_save_shipping", {
+    p_zones: zones.map((z) => ({
+      id: z.id,
+      name: z.name,
+      cities: z.cities,
+      provinces: z.provinces,
+      is_fallback: z.isFallback,
+      rate: z.rate,
+      free_over: z.freeOver,
+      days_min: z.daysMin,
+      days_max: z.daysMax,
+      courier: z.courier,
+    })),
+    p_express: express,
+  });
+  if (error) return { ok: false, error: "The rates couldn't be saved. Please try again." };
   revalidatePath("/settings/shipping");
   const refreshed = await revalidateStorefront();
   return {
     ok: true,
     message: refreshed ? "Shipping rates saved · checkout updated" : "Shipping rates saved",
+    ids: (ids ?? []) as string[],
   };
 }
 
@@ -219,6 +210,7 @@ export async function saveShipping(input: ShippingInput): Promise<Result> {
  * -------------------------------------------------------------------------------------------- */
 
 const roles = z.enum(["owner", "manager", "staff"]);
+const ALREADY_ON_TEAM = "They're already on the team. Change their role in the list instead.";
 
 async function adminUrl(): Promise<string> {
   if (process.env.NEXT_PUBLIC_ADMIN_URL)
@@ -250,6 +242,13 @@ export async function inviteMember(input: {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Please check the details." };
   const v = parsed.data;
   const svc = createServiceClient();
+  // An invite link signs in as that account, so never make one for someone already on the team.
+  const { data: onTeam } = await svc
+    .from("staff")
+    .select("status")
+    .ilike("email", v.email)
+    .maybeSingle<{ status: string }>();
+  if (onTeam?.status === "active") return { ok: false, error: ALREADY_ON_TEAM };
   const redirectTo = `${await adminUrl()}/auth/callback?next=/reset-password`;
 
   let { data, error } = await svc.auth.admin.generateLink({
@@ -275,12 +274,13 @@ export async function inviteMember(input: {
     .select("status")
     .eq("user_id", data.user.id)
     .maybeSingle<{ status: string }>();
+  if (current?.status === "active") return { ok: false, error: ALREADY_ON_TEAM };
   const { error: staffErr } = await svc.from("staff").upsert({
     user_id: data.user.id,
     name: v.name,
     email: v.email,
     role: v.role,
-    status: current?.status === "active" ? "active" : "invited",
+    status: "invited",
     invited_at: new Date().toISOString(),
   });
   if (staffErr) return { ok: false, error: "The invite couldn't be saved. Please try again." };
@@ -297,10 +297,17 @@ export async function newInviteLink(
   const svc = createServiceClient();
   const { data: member } = await svc
     .from("staff")
-    .select("email")
+    .select("email, status")
     .eq("user_id", userId)
-    .maybeSingle<{ email: string }>();
+    .maybeSingle<{ email: string; status: string }>();
   if (!member) return { ok: false, error: "That member no longer exists." };
+  // Only for people who haven't signed in yet: a link for an active account would let whoever
+  // holds it sign in as them.
+  if (member.status !== "invited")
+    return {
+      ok: false,
+      error: "They've already joined. They can use Forgot password on the sign-in page.",
+    };
   const redirectTo = `${await adminUrl()}/auth/callback?next=/reset-password`;
   const { data, error } = await svc.auth.admin.generateLink({
     type: "recovery",

@@ -81,6 +81,7 @@ export const checkoutContent = {
       "Some items in your cart are no longer available. We have updated your cart, please review it and try again.",
     priceChanged:
       "Some prices changed while you were checking out. Your order summary now shows the current total. Please review it and place your order again.",
+    tooMany: `You already have several orders waiting to be confirmed. Please WhatsApp us on ${siteConfig.contact.phoneDisplay} and we will help you with this one.`,
     generic: `Something went wrong and your order was not placed. Please try again, or WhatsApp us on ${siteConfig.contact.phoneDisplay}.`,
   },
   footer: {

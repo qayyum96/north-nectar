@@ -135,6 +135,8 @@ export function OrderHeaderActions({
         customerFirstName={order.customerFirstName}
       />
       <ReturnOrderDialog
+        // Remount when the payment changes, so "refund" starts ticked for a paid order.
+        key={paid ? "paid" : "unpaid"}
         open={returnOpen}
         onClose={() => setReturnOpen(false)}
         orderId={order.id}

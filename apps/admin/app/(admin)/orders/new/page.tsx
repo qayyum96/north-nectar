@@ -1,4 +1,7 @@
+import { toCommerceSettings } from "@northnectar/data/commerce-settings";
 import type { Metadata } from "next";
+import { fetchAll } from "@/lib/fetch-all";
+import { loadStore, loadZones } from "@/lib/settings";
 import { PageBody, PageHeader } from "@/components/ui";
 import { requireStaff } from "@/lib/auth";
 import { imageSrc } from "@/lib/format";
@@ -16,7 +19,7 @@ export default async function NewOrderPage({
   await requireStaff();
   const { customer: customerId } = await searchParams;
   const supabase = await createClient();
-  const [products, customers] = await Promise.all([
+  const [products, customers, store, zones] = await Promise.all([
     supabase
       .from("products")
       .select(
@@ -26,12 +29,18 @@ export default async function NewOrderPage({
       .eq("purchase_mode", "retail")
       .order("popularity_rank")
       .order("name"),
-    supabase
-      .from("customers")
-      .select("id, name, phone, email, whatsapp_opt_in, default_address")
-      .order("name")
-      .limit(1000),
+    fetchAll<PickCustomer>((from, to) =>
+      supabase
+        .from("customers")
+        .select("id, name, phone, email, whatsapp_opt_in, default_address")
+        .order("name")
+        .order("id")
+        .range(from, to),
+    ),
+    loadStore(),
+    loadZones(),
   ]);
+  const settings = toCommerceSettings(store, zones);
 
   type ProductRow = {
     id: string;
@@ -61,7 +70,7 @@ export default async function NewOrderPage({
       })),
   );
 
-  const pickCustomers = (customers.data ?? []) as PickCustomer[];
+  const pickCustomers = customers;
 
   return (
     <>
@@ -74,6 +83,7 @@ export default async function NewOrderPage({
         <CreateOrderForm
           variants={variants}
           customers={pickCustomers}
+          settings={settings}
           initialCustomerId={
             pickCustomers.some((c) => c.id === customerId) ? customerId : undefined
           }

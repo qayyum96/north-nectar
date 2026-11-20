@@ -17,7 +17,7 @@ import {
   enabledWallets,
   paymentMethodsFor,
 } from "@northnectar/data/commerce-settings";
-import { useCommerceSettings } from "@/features/cart/commerce-settings";
+import { useCommerceSettings, useReplaceCommerceSettings } from "@/features/cart/commerce-settings";
 import { placeOrder } from "./actions";
 import { LockIcon } from "./lock-icon";
 import {
@@ -51,6 +51,7 @@ export function CheckoutForm() {
   const [pending, startTransition] = useTransition();
   // Payment methods, wallets and delivery rates come from the admin (Settings).
   const settings = useCommerceSettings();
+  const replaceSettings = useReplaceCommerceSettings();
   const visiblePayments = paymentMethodsFor(settings);
   const wallets = enabledWallets(settings);
 
@@ -140,6 +141,8 @@ export function CheckoutForm() {
           }
         } else if (result.kind === "cart") {
           syncWithCatalog(result.catalog);
+          // Delivery rates or payment methods may have changed in the admin since the page loaded.
+          replaceSettings(result.settings);
           setFormError(result.message);
         } else {
           setFormError(result.message);

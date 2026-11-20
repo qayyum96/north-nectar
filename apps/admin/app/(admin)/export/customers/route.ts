@@ -3,6 +3,7 @@ import { type CustomerSummary, filteredCustomers, parseCustomerFilters } from "@
 import { exportColumns } from "@/lib/export-range";
 import { dateLabel, formatPhone } from "@/lib/format";
 import { addressLines } from "@/lib/orders";
+import { fetchAll } from "@/lib/fetch-all";
 import { createClient } from "@/lib/supabase/server";
 import { type Cell, exportResponse, parseFormat } from "@/lib/table-export";
 
@@ -38,10 +39,14 @@ export async function GET(request: Request) {
   const cols = exportColumns(params, COLUMNS);
   const filters = parseCustomerFilters(Object.fromEntries(params));
   const supabase = await createClient();
-  const { data, error } = await filteredCustomers(supabase, filters).limit(10000);
-  if (error) return new Response("Export failed", { status: 500 });
+  let data: unknown[];
+  try {
+    data = await fetchAll((a, b) => filteredCustomers(supabase, filters).order("id").range(a, b));
+  } catch {
+    return new Response("Export failed", { status: 500 });
+  }
 
-  const rows = ((data ?? []) as CustomerSummary[]).map((c) =>
+  const rows = (data as CustomerSummary[]).map((c) =>
     cols.map((col): Cell => {
       switch (col) {
         case "name":

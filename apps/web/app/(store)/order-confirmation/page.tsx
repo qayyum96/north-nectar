@@ -27,7 +27,7 @@ function placedWhen(createdAt: string): string {
   const day = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Karachi" }).format(d);
   const placed = new Date(createdAt);
   if (day(placed) === day(new Date())) return "today";
-  return `on ${new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Karachi", day: "numeric", month: "short" }).format(placed)}`;
+  return `on ${new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Karachi", day: "numeric", month: "short" }).format(placed).replace(/Sept/, "Sep")}`;
 }
 
 /** Order confirmation, read from the cookie set when the order was placed (mockup values). */

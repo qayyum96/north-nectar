@@ -320,8 +320,10 @@ export function ShippingForm({ initial }: { initial: ShippingInput }) {
                   if (!r.ok) return toast.error(r.error);
                   toast.show(r.message);
                   router.refresh();
-                  setSaved({ zones: ordered2, express });
-                  setZones(ordered2);
+                  // New zones get their database ids, so the next save updates them in place.
+                  const withIds = ordered2.map((z, i) => ({ ...z, id: r.ids[i] ?? z.id }));
+                  setSaved({ zones: withIds, express });
+                  setZones(withIds);
                 })
               }
               className={cn(buttonStyles.primary, "disabled:opacity-60")}

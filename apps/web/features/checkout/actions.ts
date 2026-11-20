@@ -6,6 +6,7 @@ import { getVariantCatalog } from "@/lib/commerce/get-variant-catalog";
 import { normalisePakistanMobile } from "@/lib/commerce/phone";
 import type { VariantCatalog } from "@/lib/commerce/variant-catalog";
 import {
+  type CommerceSettings,
   deliveryOptions,
   enabledWallets,
   paymentMethodsFor,
@@ -26,7 +27,14 @@ export type PlaceOrderResult =
   | { ok: true; number: string }
   | { ok: false; kind: "validation"; fieldErrors: Partial<Record<CheckoutField, string>> }
   /** The cart changed (item gone, out of stock or re-priced). `catalog` lets the browser re-sync. */
-  | { ok: false; kind: "cart"; message: string; catalog: VariantCatalog }
+  | {
+      ok: false;
+      kind: "cart";
+      message: string;
+      catalog: VariantCatalog;
+      /** Current delivery rates and payment methods (the page may have shown older ones). */
+      settings: CommerceSettings;
+    }
   | { ok: false; kind: "error"; message: string };
 
 /**
@@ -65,13 +73,24 @@ export async function placeOrder(
     return { ok: false, kind: "error", message: checkoutContent.errors.generic };
   }
 
+  // One line per size (the same size twice must not pass the stock check twice).
+  const merged = new Map<string, number>();
+  for (const { variantId, quantity } of linesParsed.data)
+    merged.set(variantId, (merged.get(variantId) ?? 0) + quantity);
+
   // Re-price every line from the data layer and check stock.
   const catalog = await getVariantCatalog();
   const lines: (OrderLine & { image: string })[] = [];
-  for (const { variantId, quantity } of linesParsed.data) {
+  for (const [variantId, quantity] of merged) {
     const variant = catalog[variantId];
     if (!variant || variant.stock < quantity) {
-      return { ok: false, kind: "cart", message: checkoutContent.errors.unavailable, catalog };
+      return {
+        ok: false,
+        kind: "cart",
+        message: checkoutContent.errors.unavailable,
+        catalog,
+        settings,
+      };
     }
     lines.push({
       productId: variant.productId,
@@ -98,7 +117,13 @@ export async function placeOrder(
     discountCode: code,
   });
   if (totals.total !== expectedTotal) {
-    return { ok: false, kind: "cart", message: checkoutContent.errors.priceChanged, catalog };
+    return {
+      ok: false,
+      kind: "cart",
+      message: checkoutContent.errors.priceChanged,
+      catalog,
+      settings,
+    };
   }
 
   const phone = normalisePakistanMobile(values.phone) ?? values.phone;
@@ -173,7 +198,11 @@ export async function placeOrder(
             ? checkoutContent.errors.priceChanged
             : checkoutContent.errors.unavailable,
         catalog: fresh,
+        settings,
       };
+    }
+    if (reason === "TOO_MANY_ORDERS") {
+      return { ok: false, kind: "error", message: checkoutContent.errors.tooMany };
     }
     console.error("[order] create_order failed", error.message);
     return { ok: false, kind: "error", message: checkoutContent.errors.generic };

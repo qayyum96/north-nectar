@@ -10,6 +10,7 @@ import {
   parseOrderFilters,
   paymentShort,
 } from "@/lib/orders";
+import { fetchAll } from "@/lib/fetch-all";
 import { createClient } from "@/lib/supabase/server";
 import { type Cell, exportResponse, parseFormat } from "@/lib/table-export";
 
@@ -57,20 +58,27 @@ export async function GET(request: Request) {
     : ORDER_LIST_COLUMNS;
 
   const supabase = await createClient();
-  let query = filteredOrders(
-    supabase,
-    ids.length ? { ...filters, q: "", status: "", pay: "", city: "" } : filters,
-    select,
-  );
-  if (ids.length) query = query.in("id", ids);
-  else {
-    if (range.from) query = query.gte("created_at", range.from);
-    if (range.to) query = query.lt("created_at", range.to);
+  const build = () => {
+    let query = filteredOrders(
+      supabase,
+      ids.length ? { ...filters, q: "", status: "", pay: "", city: "" } : filters,
+      select,
+    );
+    if (ids.length) query = query.in("id", ids);
+    else {
+      if (range.from) query = query.gte("created_at", range.from);
+      if (range.to) query = query.lt("created_at", range.to);
+    }
+    return query.order("id");
+  };
+  let data: unknown[];
+  try {
+    data = await fetchAll((a, b) => build().range(a, b));
+  } catch {
+    return new Response("Export failed", { status: 500 });
   }
-  const { data, error } = await query.limit(5000);
-  if (error) return new Response("Export failed", { status: 500 });
 
-  const rows = ((data ?? []) as unknown as Row[]).map((o) =>
+  const rows = (data as Row[]).map((o) =>
     cols.map((c): Cell => {
       switch (c) {
         case "number":

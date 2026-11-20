@@ -17,7 +17,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   return (
     <ProductEditor
-      key={product?.id ?? "new"}
+      // A new key after each save remounts the editor with fresh stock and size ids.
+      key={product ? `${product.id}-${product.updated_at}` : "new"}
       initial={toForm(product, categories)}
       categories={categories.map((c) => ({ id: c.id, name: c.name }))}
       others={products.map((p) => ({ id: p.id, name: p.name }))}

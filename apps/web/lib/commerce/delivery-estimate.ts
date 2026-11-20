@@ -23,7 +23,10 @@ function addWorkingDays(start: Date, days: number): Date {
 }
 
 const fmt = (date: Date, options: Intl.DateTimeFormatOptions) =>
-  new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", ...options }).format(date);
+  new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", ...options })
+    .format(date)
+    // Newer browsers write September as "Sept" in en-GB.
+    .replace(/Sept/, "Sep");
 
 /**
  * Estimated delivery window, formatted like the mockup: "Tue 24 to Thu 26 Nov"

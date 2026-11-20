@@ -2,6 +2,7 @@ import { getCurrentStaff } from "@/lib/auth";
 import { exportColumns } from "@/lib/export-range";
 import { dateTimeLabel } from "@/lib/format";
 import { type MovementRow, movementQuery, parseMovementFilters } from "@/lib/inventory";
+import { fetchAll } from "@/lib/fetch-all";
 import { createClient } from "@/lib/supabase/server";
 import { type Cell, exportResponse, parseFormat } from "@/lib/table-export";
 
@@ -34,9 +35,13 @@ export async function GET(request: Request) {
   const cols = exportColumns(params, COLUMNS);
   const f = parseMovementFilters(Object.fromEntries(params));
   const supabase = await createClient();
-  const { data, error } = await movementQuery(supabase, f).limit(20000);
-  if (error) return new Response("Export failed", { status: 500 });
-  const rows = ((data ?? []) as unknown as MovementRow[]).map((m) =>
+  let data: unknown[];
+  try {
+    data = await fetchAll((a, b) => movementQuery(supabase, f).range(a, b));
+  } catch {
+    return new Response("Export failed", { status: 500 });
+  }
+  const rows = (data as MovementRow[]).map((m) =>
     cols.map((c): Cell => {
       switch (c) {
         case "date":

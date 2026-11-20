@@ -229,7 +229,12 @@ export async function runImport(raw: ImportInput): Promise<ImportResult> {
         if (existing) {
           const variants = existing.variants.map((ev) => {
             const r = g.find((x) => x.sku === ev.sku.toUpperCase());
-            return { ...ev, ...(r ? { price: r.price, compare_at_price: r.compare } : {}) };
+            // Prices only: stock is left as it is in the database right now.
+            return {
+              ...ev,
+              expected_stock: ev.stock,
+              ...(r ? { price: r.price, compare_at_price: r.compare } : {}),
+            };
           });
           for (const r of g) {
             if (!existing.variants.some((ev) => ev.sku.toUpperCase() === r.sku)) {

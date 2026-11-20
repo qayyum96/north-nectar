@@ -8,11 +8,11 @@ import { catalog } from "@/lib/catalog";
  */
 export async function POST(request: Request) {
   const secret = process.env.REVALIDATE_SECRET;
-  const given = request.headers.get("x-revalidate-secret") ?? "";
+  const given = Buffer.from(request.headers.get("x-revalidate-secret") ?? "");
+  const expected = Buffer.from(secret ?? "");
+  // Compare byte lengths (timingSafeEqual throws on a mismatch, e.g. a non-ASCII header).
   const ok =
-    !!secret &&
-    given.length === secret.length &&
-    timingSafeEqual(Buffer.from(given), Buffer.from(secret));
+    expected.length > 0 && given.length === expected.length && timingSafeEqual(given, expected);
   if (!ok) return Response.json({ ok: false }, { status: 401 });
 
   catalog.clearCache?.();

@@ -1,8 +1,9 @@
 import "server-only";
+import { fetchAll } from "@/lib/fetch-all";
 import { createClient } from "@/lib/supabase/server";
 import type { ImageAsset } from "./catalogue-shared";
 import { cleanSearch } from "./orders";
-import { addDays, startOfDayPk } from "./time";
+import { addDays, isDay, startOfDayPk } from "./time";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 const one = (sp: Record<string, string | string[] | undefined>, k: string) => {
@@ -245,13 +246,16 @@ export function parsePurchaseFilters(
 
 export async function loadPurchases(): Promise<PurchaseRow[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("purchases")
-    .select(PURCHASE_COLUMNS)
-    .order("purchase_date", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(2000);
-  return ((data ?? []) as PurchaseRow[]).map((p) => ({
+  const data = await fetchAll<PurchaseRow>((a, b) =>
+    supabase
+      .from("purchases")
+      .select(PURCHASE_COLUMNS)
+      .order("purchase_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .order("id")
+      .range(a, b),
+  ).catch(() => [] as PurchaseRow[]);
+  return data.map((p) => ({
     ...p,
     lines: [...p.lines].sort((a, b) => a.sort_order - b.sort_order),
   }));
@@ -361,7 +365,6 @@ export function parseMovementFilters(
   sp: Record<string, string | string[] | undefined>,
 ): MovementFilters {
   const type = one(sp, "type");
-  const iso = /^\d{4}-\d{2}-\d{2}$/;
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Karachi" }).format(new Date());
   const monthAgo = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Karachi" }).format(
     addDays(new Date(), -30),
@@ -371,8 +374,8 @@ export function parseMovementFilters(
   return {
     type: (MOVEMENT_TYPES as string[]).includes(type) ? (type as MovementType) : "",
     product: one(sp, "product").slice(0, 80),
-    from: iso.test(from) ? from : monthAgo,
-    to: iso.test(to) ? to : today,
+    from: isDay(from) ? from : monthAgo,
+    to: isDay(to) ? to : today,
     page: Math.max(1, Number.parseInt(one(sp, "page"), 10) || 1),
   };
 }
@@ -388,7 +391,7 @@ export function movementQuery(supabase: Supabase, f: Omit<MovementFilters, "page
     .lt("created_at", addDays(new Date(`${f.to}T00:00:00+05:00`), 1).toISOString());
   if (f.type) q = q.eq("type", f.type);
   if (f.product) q = q.eq("variant.product.id", f.product);
-  return q.order("created_at", { ascending: false });
+  return q.order("created_at", { ascending: false }).order("id");
 }
 
 export async function loadMovements(f: MovementFilters) {
@@ -396,10 +399,12 @@ export async function loadMovements(f: MovementFilters) {
   const from = (f.page - 1) * MOVEMENTS_PER_PAGE;
   const [page, all, earliest] = await Promise.all([
     movementQuery(supabase, f, true).range(from, from + MOVEMENTS_PER_PAGE - 1),
-    movementQuery(supabase, { ...f, type: "" }).limit(20000),
+    fetchAll<MovementRow>((a, b) => movementQuery(supabase, { ...f, type: "" }).range(a, b)).catch(
+      () => [] as MovementRow[],
+    ),
     supabase.from("stock_movements").select("created_at").order("created_at").limit(1),
   ]);
-  const rows = (all.data ?? []) as unknown as MovementRow[];
+  const rows = all;
   const sum = (t: MovementType, pick: (m: MovementRow) => number) =>
     rows.filter((m) => m.type === t).reduce((s, m) => s + pick(m), 0);
   const purchasedUnits = sum("purchase", (m) => m.quantity);

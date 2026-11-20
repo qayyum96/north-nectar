@@ -180,12 +180,24 @@ export function parseDate(value: string): string | null {
     const year = m[3]!.length === 2 ? 2000 + +m[3]! : +m[3]!;
     return iso(year, +m[2]!, +m[1]!); // Pakistan uses day/month/year
   }
-  const t = Date.parse(v);
-  return Number.isNaN(t) ? null : new Date(t).toISOString().slice(0, 10);
+  // "2 Nov 2026", "2 November, 2026", "Nov 2 2026". Parsed by hand: Date.parse() reads these as
+  // local midnight, which turns into the previous day in UTC for Pakistan.
+  m = /^(\d{1,2})\s+([a-z]{3,9})\.?,?\s+(\d{2,4})$/i.exec(v);
+  if (m) return iso(year4(m[3]!), month(m[2]!), +m[1]!);
+  m = /^([a-z]{3,9})\.?\s+(\d{1,2}),?\s+(\d{2,4})$/i.exec(v);
+  if (m) return iso(year4(m[3]!), month(m[1]!), +m[2]!);
+  return null;
 }
+
+const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+const month = (name: string) => MONTHS.indexOf(name.slice(0, 3).toLowerCase()) + 1;
+const year4 = (y: string) => (y.length === 2 ? 2000 + +y : +y);
 
 function iso(y: number, mo: number, d: number): string | null {
   if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  // Rejects dates that don't exist, like 31/02.
+  const date = new Date(Date.UTC(y, mo - 1, d));
+  if (date.getUTCMonth() !== mo - 1 || date.getUTCDate() !== d) return null;
   return `${y}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 

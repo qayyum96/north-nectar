@@ -1,6 +1,17 @@
 /** Dates in Pakistan time, formatted like the admin mockup. */
 export const TIME_ZONE = "Asia/Karachi";
 
+/** A real calendar day written YYYY-MM-DD ("2026-13-45" or "2026-02-31" are refused). */
+export function isDay(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [y, m, d] = value.split("-").map(Number) as [number, number, number];
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
+}
+
+/** Newer browsers and Node write September as "Sept" in en-GB; the mockup uses "Sep". */
+export const noSept = (s: string) => s.replace(/\bSept\b/, "Sep");
+
 /** Intl puts a narrow no-break space before "am"/"pm"; the mockup uses a normal space. */
 const NARROW_SPACE = new RegExp(String.fromCharCode(0x202f), "g");
 
@@ -23,12 +34,14 @@ export function shortWhen(iso: string, now = new Date()): string {
   const yesterday = new Date(now.getTime() - 86_400_000);
   if (dayKey(d) === dayKey(yesterday)) return "Yesterday";
   const sameYear = d.getUTCFullYear() === now.getUTCFullYear();
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: TIME_ZONE,
-    day: "numeric",
-    month: "short",
-    ...(sameYear ? {} : { year: "numeric" }),
-  }).format(d);
+  return noSept(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: TIME_ZONE,
+      day: "numeric",
+      month: "short",
+      ...(sameYear ? {} : { year: "numeric" }),
+    }).format(d),
+  );
 }
 
 /** "Friday, 20 Nov 2026" */
@@ -41,6 +54,7 @@ export function longToday(now = new Date()): string {
     year: "numeric",
   })
     .format(now)
+    .replace(/\bSept\b/, "Sep")
     .replace(/^(\w+) /, "$1, ");
 }
 
@@ -57,13 +71,13 @@ export function addDays(d: Date, days: number): Date {
 
 /** "21 Oct" */
 export function dayLabel(d: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: TIME_ZONE,
-    day: "numeric",
-    month: "short",
-  })
-    .format(d)
-    .replace("Sept", "Sep");
+  return noSept(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: TIME_ZONE,
+      day: "numeric",
+      month: "short",
+    }).format(d),
+  );
 }
 
 /** "21 Oct to 20 Nov 2026" for a period whose end is exclusive; "21 Nov 2026" for one day. */

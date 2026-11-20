@@ -3,6 +3,7 @@ import { getCurrentStaff } from "@/lib/auth";
 import { exportColumns } from "@/lib/export-range";
 import { dateTimeLabel, formatPhone } from "@/lib/format";
 import { label } from "@/lib/orders";
+import { fetchAll } from "@/lib/fetch-all";
 import { createClient } from "@/lib/supabase/server";
 import { type Cell, exportResponse, parseFormat } from "@/lib/table-export";
 
@@ -23,15 +24,22 @@ export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const cols = exportColumns(params, COLUMNS);
   const supabase = await createClient();
-  let query = supabase
-    .from("contact_messages")
-    .select("name, email, phone, subject, message, status, read_at, created_at")
-    .order("created_at", { ascending: false })
-    .limit(10000);
-  if (params.get("tab") === "unread") query = query.is("read_at", null);
-  if (params.get("tab") === "resolved") query = query.eq("status", "resolved");
-  const { data, error } = await query;
-  if (error) return new Response("Export failed", { status: 500 });
+  const build = () => {
+    let query = supabase
+      .from("contact_messages")
+      .select("name, email, phone, subject, message, status, read_at, created_at")
+      .order("created_at", { ascending: false })
+      .order("id");
+    if (params.get("tab") === "unread") query = query.is("read_at", null);
+    if (params.get("tab") === "resolved") query = query.eq("status", "resolved");
+    return query;
+  };
+  let data: unknown[];
+  try {
+    data = await fetchAll((a, b) => build().range(a, b));
+  } catch {
+    return new Response("Export failed", { status: 500 });
+  }
 
   type Row = {
     name: string;
@@ -42,7 +50,7 @@ export async function GET(request: Request) {
     status: string;
     created_at: string;
   };
-  const rows = ((data ?? []) as Row[]).map((m) =>
+  const rows = (data as Row[]).map((m) =>
     cols.map((c): Cell => {
       switch (c) {
         case "date":

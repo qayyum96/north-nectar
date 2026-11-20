@@ -1,5 +1,5 @@
 import { formatPkr } from "@northnectar/ui";
-import { TIME_ZONE } from "./time";
+import { TIME_ZONE, noSept } from "./time";
 
 export { formatPkr };
 
@@ -8,12 +8,14 @@ const NARROW_SPACE = new RegExp(String.fromCharCode(0x202f), "g");
 
 /** "20 Nov 2026" */
 export function dateLabel(iso: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: TIME_ZONE,
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(iso));
+  return noSept(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: TIME_ZONE,
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(new Date(iso)),
+  );
 }
 
 /** "2:15 pm" */
@@ -36,11 +38,13 @@ export function dateTimeLabel(iso: string): string {
 
 /** "Aug 2026" */
 export function monthLabel(iso: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: TIME_ZONE,
-    month: "short",
-    year: "numeric",
-  }).format(new Date(iso));
+  return noSept(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: TIME_ZONE,
+      month: "short",
+      year: "numeric",
+    }).format(new Date(iso)),
+  );
 }
 
 /** Timeline time: "2:40 pm" today, otherwise "18 Nov, 2:40 pm". */
@@ -48,11 +52,13 @@ export function eventTime(iso: string, now = new Date()): string {
   const key = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE }).format(d);
   const d = new Date(iso);
   if (key(d) === key(now)) return timeLabel(iso);
-  const day = new Intl.DateTimeFormat("en-GB", {
-    timeZone: TIME_ZONE,
-    day: "numeric",
-    month: "short",
-  }).format(d);
+  const day = noSept(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: TIME_ZONE,
+      day: "numeric",
+      month: "short",
+    }).format(d),
+  );
   return `${day}, ${timeLabel(iso)}`;
 }
 

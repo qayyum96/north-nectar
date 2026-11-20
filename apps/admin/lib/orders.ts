@@ -1,4 +1,5 @@
 import "server-only";
+import { fetchAll } from "@/lib/fetch-all";
 import { createClient } from "@/lib/supabase/server";
 import { firstName, formatPkr } from "./format";
 
@@ -203,14 +204,12 @@ export async function loadOrderList(f: OrderFilters) {
       from + ORDERS_PER_PAGE - 1,
     ),
     supabase.from("orders").select("id", { count: "exact", head: true }),
-    supabase.from("orders").select("city:shipping_address->>city").limit(2000),
+    fetchAll<{ city: string | null }>((a, b) =>
+      supabase.from("orders").select("city:shipping_address->>city").order("id").range(a, b),
+    ),
   ]);
   const cityList = [
-    ...new Set(
-      ((cities.data ?? []) as { city: string | null }[])
-        .map((r) => r.city?.trim())
-        .filter((c): c is string => !!c),
-    ),
+    ...new Set(cities.map((r) => r.city?.trim()).filter((c): c is string => !!c)),
   ].sort((a, b) => a.localeCompare(b));
   return {
     rows: (list.data ?? []) as unknown as OrderListRow[],
@@ -234,25 +233,33 @@ export async function loadOrderKpis() {
       .from("orders")
       .select("id", { count: "exact", head: true })
       .eq("fulfilment_status", "shipped"),
-    supabase
-      .from("orders")
-      .select("total")
-      .eq("payment_method_id", "cod")
-      .eq("payment_status", "unpaid")
-      .not("fulfilment_status", "in", "(cancelled,returned)"),
-    supabase
-      .from("orders")
-      .select("shipped_at, delivered_at")
-      .not("shipped_at", "is", null)
-      .gte("delivered_at", since30),
+    fetchAll<{ total: number }>((a, b) =>
+      supabase
+        .from("orders")
+        .select("total")
+        .eq("payment_method_id", "cod")
+        .eq("payment_status", "unpaid")
+        .not("fulfilment_status", "in", "(cancelled,returned)")
+        .order("id")
+        .range(a, b),
+    ),
+    fetchAll<{ shipped_at: string; delivered_at: string }>((a, b) =>
+      supabase
+        .from("orders")
+        .select("shipped_at, delivered_at")
+        .not("shipped_at", "is", null)
+        .gte("delivered_at", since30)
+        .order("id")
+        .range(a, b),
+    ),
     supabase
       .from("orders")
       .select("id", { count: "exact", head: true })
       .eq("fulfilment_status", "returned")
       .gte("updated_at", since30),
   ]);
-  const codRows = (cod.data ?? []) as { total: number }[];
-  const transit = ((delivered.data ?? []) as { shipped_at: string; delivered_at: string }[]).map(
+  const codRows = cod;
+  const transit = delivered.map(
     (r) => (Date.parse(r.delivered_at) - Date.parse(r.shipped_at)) / 86_400_000,
   );
   return {

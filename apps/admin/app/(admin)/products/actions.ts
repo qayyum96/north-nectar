@@ -128,6 +128,7 @@ function payload(f: ProductForm, slug: string) {
       price: parseAmount(v.price) ?? 0,
       compare_at_price: parseAmount(v.compare),
       stock: Number(v.stock || "0"),
+      expected_stock: v.loadedStock,
       weight_grams: gramsFromLabel(v.label),
       shipping_weight_grams: parseAmount(v.weight.replace(/g$/i, "")),
       tag: v.tag.trim(),
@@ -142,6 +143,8 @@ function friendly(message: string): string {
   if (sku) return `SKU ${sku[1]} is already used by another product.`;
   if (message.includes("SIZE_IN_OPEN_ORDERS"))
     return "A size you removed is in open orders. Finish or cancel those orders first.";
+  if (message.includes("STOCK_CHANGED"))
+    return "Stock for a size changed while you were editing (an order or purchase). Reload the page to see the new count, then save again.";
   if (message.includes("STOCK_BELOW_RESERVED"))
     return "Stock can't be lower than the units in open orders.";
   if (message.includes("NOT_ALLOWED")) return "Only owners and managers can edit products.";

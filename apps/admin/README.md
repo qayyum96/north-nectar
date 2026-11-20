@@ -129,11 +129,11 @@ lib/               auth, Supabase clients, dashboard queries, Pakistan-time help
 
 ## Phases
 
-| Phase | Scope                                                                           | Status |
-| ----- | ------------------------------------------------------------------------------- | ------ |
-| 1     | Foundation: schema, RLS, sign-in, shell, dashboard, search, website on Supabase | done   |
-| 2     | Orders, customers, messages                                                     | done   |
-| 3     | Products, categories, image upload                                              | done   |
-| 4     | Stock, suppliers, purchases, movements, CSV import                              | done   |
-| 5     | Reports and settings (payments and shipping rates move to the database)         | done   |
-| 6     | Audit                                                                           |        |
+| Phase | Scope                                                                                       | Status |
+| ----- | ------------------------------------------------------------------------------------------- | ------ |
+| 1     | Foundation: schema, RLS, sign-in, shell, dashboard, search, website on Supabase             | done   |
+| 2     | Orders, customers, messages                                                                 | done   |
+| 3     | Products, categories, image upload                                                          | done   |
+| 4     | Stock, suppliers, purchases, movements, CSV import                                          | done   |
+| 5     | Reports and settings (payments and shipping rates move to the database)                     | done   |
+| 6     | Audit: security, stock and money fixes, accessibility ([report](../../docs/admin-audit.md)) | done   |

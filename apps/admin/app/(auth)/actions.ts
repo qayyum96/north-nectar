@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod/mini";
 import { REMEMBER_COOKIE } from "@/lib/supabase/cookies";
 import { createClient } from "@/lib/supabase/server";
+import { safeNext } from "@/lib/safe-next";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export interface AuthFormState {
@@ -18,12 +19,6 @@ const emailSchema = z.pipe(
   z.string().check(z.trim(), z.minLength(1, "Enter your email")),
   z.email("Enter a valid email, like you@northnectar.com"),
 );
-
-/** Only allow redirects inside the admin (prevents open redirects through ?next=). */
-function safeNext(value: FormDataEntryValue | null): string {
-  const next = typeof value === "string" ? value : "";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/";
-}
 
 async function origin(): Promise<string> {
   const configured = process.env.NEXT_PUBLIC_ADMIN_URL;

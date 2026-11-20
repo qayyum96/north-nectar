@@ -1,6 +1,7 @@
 import "server-only";
+import { fetchAll } from "@/lib/fetch-all";
 import { createClient } from "@/lib/supabase/server";
-import { addDays, dayLabel, startOfDayPk } from "@/lib/time";
+import { addDays, dayLabel, isDay, startOfDayPk } from "@/lib/time";
 
 export type RangeKey = "today" | "7d" | "30d" | "custom";
 
@@ -16,8 +17,6 @@ export interface DashboardRange {
   to?: string;
 }
 
-const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
-
 /** Reads ?range=today|7d|30d|custom&from=YYYY-MM-DD&to=YYYY-MM-DD (Pakistan days). */
 export function parseRange(
   params: { range?: string; from?: string; to?: string },
@@ -29,8 +28,8 @@ export function parseRange(
     params.range === "custom" &&
     params.from &&
     params.to &&
-    ISO_DAY.test(params.from) &&
-    ISO_DAY.test(params.to)
+    isDay(params.from) &&
+    isDay(params.to)
   ) {
     let start = new Date(`${params.from}T00:00:00+05:00`);
     let end = addDays(new Date(`${params.to}T00:00:00+05:00`), 1);
@@ -73,6 +72,7 @@ interface OrderRow {
   id: string;
   number: string;
   total: number;
+  discount: number;
   fulfilment_status: string;
   created_at: string;
   shipping_address: { fullName?: string; city?: string } | null;
@@ -96,16 +96,27 @@ export async function loadDashboard(range: DashboardRange) {
   const supabase = await createClient();
   const dayKey = (x: Date) =>
     new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Karachi" }).format(x);
+  // Every page of rows (Supabase returns 1,000 at most per request), with any error kept.
+  const all = <T>(page: Parameters<typeof fetchAll>[0]) =>
+    fetchAll<T>(page).then(
+      (data) => ({ data, error: null as unknown }),
+      (error: unknown) => ({ data: [] as T[], error }),
+    );
   const [ordersRes, recentRes, messagesRes, variantsRes, purchasesRes] = await Promise.all([
-    supabase
-      .from("orders")
-      .select(
-        "id, number, total, fulfilment_status, created_at, shipping_address, order_lines(name, variant_label, variant_id, image, quantity, line_total, unit_cost)",
-      )
-      .gte("created_at", range.prevStart.toISOString())
-      .lt("created_at", range.end.toISOString())
-      .neq("fulfilment_status", "cancelled")
-      .returns<OrderRow[]>(),
+    // Sales figures leave out cancelled and returned (refunded) orders.
+    all<OrderRow>((a, b) =>
+      supabase
+        .from("orders")
+        .select(
+          "id, number, total, discount, fulfilment_status, created_at, shipping_address, order_lines(name, variant_label, variant_id, image, quantity, line_total, unit_cost)",
+        )
+        .gte("created_at", range.prevStart.toISOString())
+        .lt("created_at", range.end.toISOString())
+        .not("fulfilment_status", "in", "(cancelled,returned)")
+        .order("created_at")
+        .order("id")
+        .range(a, b),
+    ),
     supabase
       .from("orders")
       .select("id, number, total, fulfilment_status, created_at, shipping_address")
@@ -133,13 +144,17 @@ export async function loadDashboard(range: DashboardRange) {
           products: { name: string; status: string };
         }[]
       >(),
-    supabase
-      .from("purchases")
-      .select("total, purchase_date")
-      .gte("purchase_date", dayKey(range.prevStart))
-      .lt("purchase_date", dayKey(range.end)),
+    all<{ total: number; purchase_date: string }>((a, b) =>
+      supabase
+        .from("purchases")
+        .select("total, purchase_date")
+        .gte("purchase_date", dayKey(range.prevStart))
+        .lt("purchase_date", dayKey(range.end))
+        .order("id")
+        .range(a, b),
+    ),
   ]);
-  const purchases = (purchasesRes.data ?? []) as { total: number; purchase_date: string }[];
+  const purchases = purchasesRes.data;
   const startKey = dayKey(range.start);
   const spentNow = purchases
     .filter((p) => p.purchase_date >= startKey)
@@ -149,7 +164,7 @@ export async function loadDashboard(range: DashboardRange) {
     .reduce((s, p) => s + p.total, 0);
   const anyPurchases = purchases.length > 0;
 
-  const orders = ordersRes.data ?? [];
+  const orders = ordersRes.data;
   const inRange = (o: OrderRow) => new Date(o.created_at) >= range.start;
   const current = orders.filter(inRange);
   const previous = orders.filter((o) => !inRange(o));
@@ -159,7 +174,8 @@ export async function loadDashboard(range: DashboardRange) {
   const profit = (list: OrderRow[]): number | null => {
     const all = lines(list);
     if (all.some((l) => l.unit_cost === null)) return null;
-    return all.reduce((s, l) => s + l.line_total - (l.unit_cost ?? 0) * l.quantity, 0);
+    const discounts = list.reduce((s, o) => s + o.discount, 0);
+    return all.reduce((s, l) => s + l.line_total - (l.unit_cost ?? 0) * l.quantity, 0) - discounts;
   };
 
   const revNow = revenue(current);

@@ -1,4 +1,5 @@
 import "server-only";
+import { fetchAll } from "@/lib/fetch-all";
 import { createClient } from "@/lib/supabase/server";
 import { cleanSearch, type ShippingAddress } from "./orders";
 import { startOfDayPk } from "./time";
@@ -127,12 +128,15 @@ export async function loadCustomers(f: CustomerFilters) {
   const from = (f.page - 1) * CUSTOMERS_PER_PAGE;
   const [list, all] = await Promise.all([
     filteredCustomers(supabase, f, true).range(from, from + CUSTOMERS_PER_PAGE - 1),
-    supabase
-      .from("customer_summaries")
-      .select("city, orders_count, total_spent, created_at, whatsapp_opt_in")
-      .limit(20000),
+    fetchAll((a, b) =>
+      supabase
+        .from("customer_summaries")
+        .select("city, orders_count, total_spent, created_at, whatsapp_opt_in")
+        .order("id")
+        .range(a, b),
+    ),
   ]);
-  const everyone = (all.data ?? []) as Pick<
+  const everyone = all as Pick<
     CustomerSummary,
     "city" | "orders_count" | "total_spent" | "created_at" | "whatsapp_opt_in"
   >[];
@@ -194,10 +198,17 @@ export async function loadCustomer(id: string) {
       .eq("customer_id", id)
       .order("created_at", { ascending: false })
       .limit(50),
-    supabase.from("orders").select("total").neq("fulfilment_status", "cancelled").limit(20000),
+    fetchAll<{ total: number }>((a, b) =>
+      supabase
+        .from("orders")
+        .select("total")
+        .not("fulfilment_status", "in", "(cancelled,returned)")
+        .order("id")
+        .range(a, b),
+    ),
   ]);
   if (!customer.data) return null;
-  const totals = ((store.data ?? []) as { total: number }[]).map((o) => o.total);
+  const totals = store.map((o) => o.total);
   return {
     customer: customer.data as CustomerSummary,
     orders: (orders.data ?? []) as {
