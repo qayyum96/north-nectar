@@ -45,3 +45,11 @@
     }
   }
 }
+
+/*
+ * Temporary: hide the "Powered by Netlify" badge that Netlify injects on free-plan projects.
+ * Remove this once the hosting plan changes.
+ */
+#nl-badge-frame {
+  display: none !important;
+}
