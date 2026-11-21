@@ -69,9 +69,13 @@ lib/               auth, Supabase clients, dashboard queries, Pakistan-time help
 - **Saving** runs the database function `admin_save_product`: the product and all its sizes are
   saved together, a changed stock number is recorded as an "adjustment" stock movement, and a size
   that is still in open orders can't be removed.
-- **Images** upload straight from the browser to the public Supabase Storage bucket `catalog`
-  (`products/<id>/`, `categories/<id>/`). Each photo is resized to at most 1600 px and converted to
-  WebP first, so the free 1 GB lasts. Removed images are deleted from storage when you save.
+- **Images** are resized in the browser (at most 1600 px, WebP, usually 150–400 KB, never over 1 MB) and saved to
+  **Cloudflare R2** (`products/<id>/`, `categories/<id>/`), served from `NEXT_PUBLIC_MEDIA_URL`
+  (e.g. `https://images.northnectar.com`). R2's free plan has 10 GB and no download fees. Until the
+  R2 keys are set, uploads go to the Supabase Storage bucket `catalog` (1 GB free) instead; run
+  `pnpm media:to-r2` once after setting the keys to move those files and update the database. The
+  original images that came with the site stay in `apps/web/public/images`. Purchase bills stay in
+  the private Supabase bucket `bills`. Removed images are deleted from storage when you save.
 - **Description formatting:** **bold**, _italic_, **underline**, [links](https://…) and "- " lists.
   The website renders these safely (no raw HTML).
 - **Website details** (tagline, short name, botanical name, origin, badge, home page flags, sort

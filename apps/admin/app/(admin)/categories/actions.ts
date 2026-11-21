@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireStaff } from "@/lib/auth";
-import { storagePath } from "@/lib/catalogue";
+import { mediaRef, removeMedia } from "@/lib/media";
 import { revalidateStorefront } from "@/lib/revalidate";
 import { createClient } from "@/lib/supabase/server";
 
@@ -87,9 +87,9 @@ export async function saveCategory(input: CategoryInput): Promise<CategoryResult
     : await supabase.from("categories").update(row).eq("id", v.id);
   if (error) return { ok: false, error: "The category couldn't be saved. Please try again." };
 
-  const old = before?.image?.src ? storagePath(before.image.src) : null;
-  if (old && old !== (v.image ? storagePath(v.image.src) : null) && old.startsWith("categories/")) {
-    await supabase.storage.from("catalog").remove([old]);
+  const old = mediaRef(before?.image?.src);
+  if (old && before?.image?.src !== v.image?.src && old.path.startsWith("categories/")) {
+    await removeMedia([old]);
   }
   await after();
   return { ok: true, id: v.id, message: v.isNew ? `${v.name} added` : "Category saved" };
@@ -116,8 +116,8 @@ export async function deleteCategory(id: string): Promise<CategoryResult> {
   const { error } = await supabase.from("categories").delete().eq("id", id);
   if (error) return { ok: false, error: "The category couldn't be deleted." };
   const path = (cat as { image: { src: string } | null } | null)?.image?.src;
-  const file = path ? storagePath(path) : null;
-  if (file?.startsWith("categories/")) await supabase.storage.from("catalog").remove([file]);
+  const file = mediaRef(path);
+  if (file?.path.startsWith("categories/")) await removeMedia([file]);
   await after();
   return {
     ok: true,

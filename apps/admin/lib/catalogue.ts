@@ -260,10 +260,3 @@ export function toForm(p: ProductRow | null, categories: CategoryRow[]): Product
     relatedIds: p.related_product_ids,
   };
 }
-
-/** Storage object path for a public URL in our bucket ("products/<id>/<file>.webp"), else null. */
-export function storagePath(src: string): string | null {
-  const marker = "/storage/v1/object/public/catalog/";
-  const i = src.indexOf(marker);
-  return i >= 0 ? decodeURIComponent(src.slice(i + marker.length).split("?")[0]!) : null;
-}

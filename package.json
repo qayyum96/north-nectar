@@ -19,7 +19,8 @@
     "db:migrate": "node scripts/db.mjs migrate",
     "db:status": "node scripts/db.mjs status",
     "db:seed": "tsx scripts/db-seed.mts",
-    "admin:make-owner": "node scripts/make-owner.mjs"
+    "admin:make-owner": "node scripts/make-owner.mjs",
+    "media:to-r2": "node scripts/media-to-r2.mjs"
   },
   "devDependencies": {
     "@northnectar/config": "workspace:*",

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/auth";
-import { loadProduct, storagePath } from "@/lib/catalogue";
+import { loadProduct } from "@/lib/catalogue";
 import {
   type ProductForm,
   gramsFromLabel,
@@ -10,6 +10,7 @@ import {
   parseAmount,
   slugify,
 } from "@/lib/catalogue-shared";
+import { type MediaRef, copyMedia, mediaRef, removeMedia, removeMediaFolder } from "@/lib/media";
 import { revalidateStorefront } from "@/lib/revalidate";
 import { createClient } from "@/lib/supabase/server";
 
@@ -181,9 +182,9 @@ export async function saveProduct(form: ProductForm): Promise<SaveResult> {
     const kept = new Set(form.images.map((i) => i.src));
     const gone = before.images
       .filter((i) => !kept.has(i.src))
-      .map((i) => storagePath(i.src))
-      .filter((p): p is string => !!p && p.startsWith(`products/${id}/`));
-    if (gone.length) await supabase.storage.from("catalog").remove(gone);
+      .map((i) => mediaRef(i.src))
+      .filter((r): r is MediaRef => !!r && r.path.startsWith(`products/${id}/`));
+    if (gone.length) await removeMedia(gone);
   }
   const refreshed = await afterChange(id);
   return { ok: true, id, message: form.isNew ? "Product created" : "Product saved", refreshed };
@@ -214,18 +215,13 @@ export async function duplicateProduct(id: string): Promise<SaveResult> {
 
   const images = [];
   for (const img of p.images) {
-    const from = storagePath(img.src);
+    const from = mediaRef(img.src);
     if (!from) {
       images.push(img);
       continue;
     }
-    const to = `products/${newId}/${crypto.randomUUID()}.webp`;
-    const { error } = await supabase.storage.from("catalog").copy(from, to);
-    images.push(
-      error
-        ? img
-        : { ...img, src: supabase.storage.from("catalog").getPublicUrl(to).data.publicUrl },
-    );
+    const copied = await copyMedia(from, `products/${newId}/${crypto.randomUUID()}.webp`);
+    images.push(copied ? { ...img, src: copied } : img);
   }
 
   const { error } = await supabase.rpc("admin_save_product", {
@@ -260,11 +256,7 @@ export async function deleteProduct(
   const supabase = await createClient();
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) return { ok: false, error: "The product couldn't be deleted. Please try again." };
-  const { data: files } = await supabase.storage
-    .from("catalog")
-    .list(`products/${id}`, { limit: 100 });
-  if (files?.length)
-    await supabase.storage.from("catalog").remove(files.map((f) => `products/${id}/${f.name}`));
+  await removeMediaFolder(`products/${id}`);
   await afterChange();
   return { ok: true, message: `${p.name} deleted` };
 }
