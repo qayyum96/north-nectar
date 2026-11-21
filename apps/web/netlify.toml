@@ -13,3 +13,6 @@
   NODE_VERSION = "22"
   # Netlify's Next.js runtime needs Next and its dependencies hoisted with pnpm.
   PNPM_FLAGS = "--shamefully-hoist"
+  # Public on purpose (NEXT_PUBLIC_ values are sent to the browser; the Supabase publishable key
+  # is protected by row level security). Secrets such as the service key are still scanned.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_SITE_URL,NEXT_PUBLIC_SITE_ENV,NEXT_PUBLIC_MEDIA_URL,CATALOG_SOURCE,CATALOG_INCLUDE_DRAFTS"
