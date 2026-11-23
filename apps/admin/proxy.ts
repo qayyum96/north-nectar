@@ -33,18 +33,20 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  // Verifies the token with Supabase Auth (and refreshes it when needed).
-  const { data } = await supabase.auth.getUser();
+  // Verifies the signed session token locally with the project's public signing key (no round trip
+  // to Supabase Auth on every request), refreshing it first when it has expired.
+  const { data } = await supabase.auth.getClaims();
+  const signedIn = Boolean(data?.claims?.sub);
   const path = request.nextUrl.pathname;
   const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
 
-  if (!data.user && !isPublic) {
+  if (!signedIn && !isPublic) {
     const login = request.nextUrl.clone();
     login.pathname = "/login";
     login.search = path === "/" ? "" : `?next=${encodeURIComponent(path + request.nextUrl.search)}`;
     return NextResponse.redirect(login);
   }
-  if (data.user && path === "/login") {
+  if (signedIn && path === "/login") {
     const home = request.nextUrl.clone();
     home.pathname = "/";
     home.search = "";

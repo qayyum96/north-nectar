@@ -11,10 +11,12 @@ export const dynamic = "force-dynamic";
 
 /** Every admin page: staff only, with the sidebar, counts and notifications. */
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const staff = await requireStaff();
   const supabase = await createClient();
 
-  const [pendingCount, unreadCount, pendingOrders, unreadMessages] = await Promise.all([
+  // Started together with the staff check rather than after it (the database is far from the
+  // server, so each step that waits for the previous one adds a noticeable delay). Row level
+  // security returns nothing to anyone who isn't staff, and requireStaff redirects them anyway.
+  const counts = Promise.all([
     supabase
       .from("orders")
       .select("id", { count: "exact", head: true })
@@ -36,6 +38,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       .order("created_at", { ascending: false })
       .limit(5),
   ]);
+  const staff = await requireStaff();
+  const [pendingCount, unreadCount, pendingOrders, unreadMessages] = await counts;
 
   const notifications: (ShellNotification & { at: string })[] = [
     ...(pendingOrders.data ?? []).map((o) => ({

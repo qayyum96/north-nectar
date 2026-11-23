@@ -1,6 +1,6 @@
 import type { Category } from "@northnectar/types";
 import Image from "next/image";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import type { CSSProperties } from "react";
 import { homeContent } from "@/content/home";
 import { categoryPath } from "@/lib/routes";

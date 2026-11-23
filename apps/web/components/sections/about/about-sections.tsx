@@ -1,6 +1,6 @@
 import { MapPinIcon } from "@northnectar/ui";
 import Image from "next/image";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import { FloatingLeaf } from "@/components/decor/floating-leaf";
 import { Eyebrow, PageHeading } from "@/components/sections/page-heading";
 import { aboutContent, aboutCtaText } from "@/content/about";

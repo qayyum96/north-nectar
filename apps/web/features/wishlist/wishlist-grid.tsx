@@ -1,7 +1,7 @@
 "use client";
 
 import { HeartIcon } from "@northnectar/ui";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import { useSyncExternalStore, type ReactNode } from "react";
 import { useWishlist } from "./store";
 

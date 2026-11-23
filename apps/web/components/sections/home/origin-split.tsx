@@ -1,6 +1,6 @@
 import { ChevronRightIcon } from "@northnectar/ui/icons";
 import Image from "next/image";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import { homeContent } from "@/content/home";
 import { images } from "@/lib/images";
 

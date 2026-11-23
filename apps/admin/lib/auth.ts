@@ -15,12 +15,15 @@ export interface CurrentStaff {
 /** The signed-in staff member, or null (not signed in, or not on the team). Once per request. */
 export const getCurrentStaff = cache(async (): Promise<CurrentStaff | null> => {
   const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return null;
+  // Checked locally against the project's public signing key: no round trip to Supabase Auth.
+  // The database still verifies the same token (row level security) on every query.
+  const { data: auth } = await supabase.auth.getClaims();
+  const userId = auth?.claims?.sub;
+  if (!userId) return null;
   const { data } = await supabase
     .from("staff")
     .select("user_id, name, email, role, status")
-    .eq("user_id", auth.user.id)
+    .eq("user_id", userId)
     .maybeSingle<{
       user_id: string;
       name: string;
@@ -53,8 +56,8 @@ export async function requireStaff(roles?: StaffRole[]): Promise<CurrentStaff> {
   const staff = await getCurrentStaff();
   if (!staff) {
     const supabase = await createClient();
-    const { data } = await supabase.auth.getUser();
-    redirect(data.user ? "/auth/signout?reason=no-access" : "/login");
+    const { data } = await supabase.auth.getClaims();
+    redirect(data?.claims?.sub ? "/auth/signout?reason=no-access" : "/login");
   }
   if (roles && !roles.includes(staff.role)) redirect("/?denied=1");
   return staff;

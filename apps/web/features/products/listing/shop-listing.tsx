@@ -2,7 +2,7 @@
 
 import type { ProductSort } from "@northnectar/data";
 import { ChevronDownIcon, FilterIcon, cn } from "@northnectar/ui";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { shopContent } from "@/content/shop";

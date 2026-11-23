@@ -1,6 +1,6 @@
 import { ChatIcon, FacebookIcon, InstagramIcon, TikTokIcon } from "@northnectar/ui/icons";
 import Image from "next/image";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import type { ComponentType } from "react";
 import { footerCopy } from "@/content/site";
 import { getCommerceSettings } from "@/lib/commerce/settings";

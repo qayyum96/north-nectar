@@ -2,7 +2,7 @@
 
 import { getDefaultVariant } from "@northnectar/data/utils";
 import { CheckIcon, cn, formatPkr } from "@northnectar/ui";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import { useId, useState } from "react";
 import { useAddToCart } from "@/features/cart/use-add-to-cart";
 import { productPath } from "@/lib/routes";

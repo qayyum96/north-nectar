@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import type { PolicyDocument } from "@/content/policies";
 import { policies } from "@/content/policies";

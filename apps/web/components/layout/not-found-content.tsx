@@ -1,6 +1,6 @@
 import { Container, Eyebrow, buttonVariants } from "@northnectar/ui";
 import Image from "next/image";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import { HeaderSearch } from "@/components/layout/header-search";
 import { images } from "@/lib/images";
 

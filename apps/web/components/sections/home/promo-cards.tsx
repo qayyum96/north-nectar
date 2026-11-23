@@ -2,7 +2,7 @@ import type { Product } from "@northnectar/types";
 import { cn, formatPkr } from "@northnectar/ui";
 import { getMinPrice } from "@northnectar/data/utils";
 import Image from "next/image";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import { productPath } from "@/lib/routes";
 
 export interface Promo {

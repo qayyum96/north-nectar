@@ -1,7 +1,7 @@
 import type { Category, Product } from "@northnectar/types";
 import { Tabs } from "@northnectar/ui";
 import { ArrowRightIcon } from "@northnectar/ui/icons";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import { ProductGrid } from "@/features/products/product-grid";
 import { HomeHeading } from "./heading";
 

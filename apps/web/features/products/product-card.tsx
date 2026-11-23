@@ -1,7 +1,7 @@
 import type { Product } from "@northnectar/types";
 import { cn } from "@northnectar/ui";
 import Image from "next/image";
-import Link from "next/link";
+import { IntentLink as Link } from "@/components/ui/intent-link";
 import { productPath, wholesaleEnquiryPath } from "@/lib/routes";
 import { ProductCardPurchase } from "./product-card-purchase";
 import { toPurchasable } from "./purchasable";
