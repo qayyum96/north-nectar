@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const category = await catalog.getCategoryBySlug(slug);
   if (!category) return { title: "Category not found" };
   return buildMetadata({
-    title: category.seo?.title ?? `${category.name} from Gilgit-Baltistan`,
+    title: category.seo?.title ?? `${category.name} – Buy Online in Pakistan`,
     description: category.seo?.description ?? category.description,
     path: categoryPath(category.slug),
   });

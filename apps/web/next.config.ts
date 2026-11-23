@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { LEGACY_REWRITES } from "./lib/seo/legacy-redirects";
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -45,6 +46,11 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@northnectar/ui"],
     // Note: experimental.inlineCss was tested and rejected. It embeds the stylesheet three times per
     // page (style tag + RSC payload), roughly tripling HTML size.
+  },
+  // Addresses from the previous WordPress site go to a resolver that redirects them (301) to the
+  // closest live page. "beforeFiles" so they win over any page with a similar path.
+  async rewrites() {
+    return { beforeFiles: LEGACY_REWRITES, afterFiles: [], fallback: [] };
   },
   async headers() {
     return [

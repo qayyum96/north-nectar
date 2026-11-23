@@ -39,11 +39,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await catalog.getProductBySlug(slug);
   if (!product) return { title: "Product not found" };
+  // Default snippet: tagline + first paragraph, without repeating the tagline when the paragraph
+  // already starts with it, cut at a word boundary near Google's ~160-character display limit.
+  const first = plainText(product.description[0] ?? "");
+  const tagline = product.tagline.trim();
+  const fullDescription = (
+    first.toLowerCase().startsWith(tagline.toLowerCase()) ? first : `${tagline} ${first}`
+  ).trim();
+  const description =
+    fullDescription.length > 160
+      ? `${fullDescription.slice(0, 157).replace(/\s+\S*$/, "")}…`
+      : fullDescription;
   return buildMetadata({
-    title: product.seo?.title ?? product.name,
-    description:
-      product.seo?.description ??
-      `${product.tagline} ${plainText(product.description[0] ?? "")}`.trim(),
+    // Shoppers in Pakistan search "<product> price in Pakistan" or "buy <product> online".
+    title: product.seo?.title ?? `${product.name} – Buy Online in Pakistan`,
+    description: product.seo?.description ?? description,
     path: productPath(product.slug),
     image: {
       url: `/og/product/${product.slug}`,
