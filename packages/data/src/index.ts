@@ -52,7 +52,16 @@ export function createCatalogRepository(): CatalogRepository {
       const client = createClient(url, key, {
         auth: { persistSession: false, autoRefreshToken: false },
       });
-      return new SupabaseCatalogRepository(client, { includeDrafts });
+      // One snapshot serves all the reads of a page (product, categories, related, metadata).
+      // While the site runs it must be short: the shop runs as several server instances, and the
+      // admin's refresh only clears the snapshot in the one it reaches, so a page rebuilt by
+      // another instance would otherwise reuse up to a minute-old catalogue and cache it again.
+      // During `next build` the longer snapshot saves dozens of identical queries.
+      const building = process.env.NEXT_PHASE === "phase-production-build";
+      return new SupabaseCatalogRepository(client, {
+        includeDrafts,
+        cacheMs: building ? 60_000 : 3_000,
+      });
     }
     default:
       throw new Error(`Unknown CATALOG_SOURCE "${source}". Expected "seed" or "supabase".`);

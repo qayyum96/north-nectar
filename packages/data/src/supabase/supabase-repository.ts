@@ -11,7 +11,10 @@ export interface SupabaseRepositoryOptions {
    * because the public key can only read active rows (row level security).
    */
   includeDrafts?: boolean;
-  /** How long one catalogue snapshot is reused, in ms. Pages also revalidate on their own. */
+  /**
+   * How long one catalogue snapshot is reused, in ms (default 60 s). Keep it to a few seconds on a
+   * running site: each server instance has its own snapshot (see createCatalogRepository).
+   */
   cacheMs?: number;
 }
 
