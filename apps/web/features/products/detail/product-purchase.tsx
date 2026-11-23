@@ -103,6 +103,8 @@ function ProductPurchaseView({
               {formatPkr(variant.compareAtPrice)}
             </s>
           ) : null}
+          {/* Unit price for comparing sizes, from the size's weight (e.g. 1 kg at Rs 26,000 ->
+              "Rs 2,600 per 100g"). Sizes without a weight show nothing here. */}
           {formatPricePer100g(variant.price, variant.weightGrams) ? (
             <span className="text-[15px] text-[#5e5a4e]">
               {formatPricePer100g(variant.price, variant.weightGrams)}
@@ -159,6 +161,11 @@ function ProductPurchaseView({
             })}
           </div>
         </fieldset>
+      ) : variant?.label ? (
+        // One size only: no picker, but still say what the price is for ("Size: 1 kg").
+        <p className="m-0 text-[15px] leading-[23px] font-bold">
+          Size: <span className="font-medium text-[#4d4a40]">{variant.label}</span>
+        </p>
       ) : null}
 
       <div className="flex flex-wrap gap-3 pt-1">
