@@ -47,6 +47,20 @@ const nextConfig: NextConfig = {
     // Note: experimental.inlineCss was tested and rejected. It embeds the stylesheet three times per
     // page (style tag + RSC payload), roughly tripling HTML size.
   },
+  // The previous WordPress site published sitemap_index.xml and per-type sitemaps; search engines
+  // that remember them are sent to the current sitemap.
+  async redirects() {
+    return [
+      { source: "/sitemap_index.xml", destination: "/sitemap.xml", permanent: true },
+      {
+        source:
+          "/:type(post|page|product|category|footer|post_tag|product_brand|product_cat|product_tag|pa_origin|pa_product-form|author)-sitemap.xml",
+        destination: "/sitemap.xml",
+        permanent: true,
+      },
+      { source: "/wp-sitemap.xml", destination: "/sitemap.xml", permanent: true },
+    ];
+  },
   // Addresses from the previous WordPress site go to a resolver that redirects them (301) to the
   // closest live page. "beforeFiles" so they win over any page with a similar path.
   async rewrites() {
