@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { DangerButton, Dialog } from "@/components/dialog";
 import { Icon } from "@/components/icon";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import { useToast } from "@/components/toast";
 import { Card, CardHeader, buttonStyles, fieldStyles } from "@/components/ui";
 import { type ImageAsset, slugify } from "@/lib/catalogue-shared";
@@ -22,10 +23,17 @@ export interface CategoryFormValues {
   image: ImageAsset | null;
   metaTitle: string;
   metaDescription: string;
+  /** Page text below the products; paragraphs separated by a blank line. */
+  content: string;
+  faqs: { question: string; answer: string }[];
   products: number;
 }
 
+const MAX_FAQS = 12;
+
 const RED = "border-[#d92d20]";
+
+const wordCount = (text: string) => text.split(/\s+/).filter(Boolean).length;
 
 export function CategoryEditor({ initial }: { initial: CategoryFormValues }) {
   const [v, setV] = useState(initial);
@@ -49,6 +57,8 @@ export function CategoryEditor({ initial }: { initial: CategoryFormValues }) {
         image: v.image,
         metaTitle: v.metaTitle,
         metaDescription: v.metaDescription,
+        content: v.content,
+        faqs: v.faqs,
       });
       if (!result.ok) {
         setErrors(result.fields ?? {});
@@ -159,6 +169,113 @@ export function CategoryEditor({ initial }: { initial: CategoryFormValues }) {
             onChange={(e) => setV({ ...v, description: e.target.value })}
             className={cn(fieldStyles.textarea, "min-h-[72px]")}
           />
+        </div>
+        <div className="flex flex-col gap-[14px] border-t border-[#f0f0ee] pt-[14px]">
+          <span className="flex flex-col gap-1">
+            <span className="text-[14px] font-bold">Page content</span>
+            <span className="text-admin-muted text-[14px] leading-[1.5]">
+              Shown below the products on the category page. Helps the page appear in Google
+              searches.
+            </span>
+          </span>
+          <div className="flex flex-col gap-[6px]">
+            <span className="flex justify-between gap-2">
+              <label htmlFor="ce-content" className="text-[14px] font-semibold">
+                About this category
+              </label>
+              <span className="text-admin-muted text-[14px]">{wordCount(v.content)} words</span>
+            </span>
+            <RichTextEditor
+              id="ce-content"
+              label="About this category"
+              value={v.content}
+              minHeight={220}
+              invalid={Boolean(errors.content)}
+              onChange={(content) => setV((x) => ({ ...x, content }))}
+            />
+            <span className="text-admin-muted text-[14px]">
+              Leave a blank line between paragraphs. 300 to 500 words works well.
+            </span>
+            {errors.content ? (
+              <span role="alert" className="text-[14px] text-[#b42318]">
+                {errors.content}
+              </span>
+            ) : null}
+          </div>
+          <fieldset className="m-0 flex flex-col gap-[10px] border-0 p-0">
+            <legend className="mb-[6px] p-0 text-[14px] font-semibold">Common questions</legend>
+            {v.faqs.length === 0 ? (
+              <span className="text-admin-muted text-[14px]">
+                No questions yet. Add the questions customers ask most about this category.
+              </span>
+            ) : null}
+            {v.faqs.map((faq, i) => {
+              const err =
+                errors[`faqs.${i}`] ?? errors[`faqs.${i}.question`] ?? errors[`faqs.${i}.answer`];
+              const update = (patch: Partial<typeof faq>) =>
+                setV((x) => ({
+                  ...x,
+                  faqs: x.faqs.map((f, j) => (j === i ? { ...f, ...patch } : f)),
+                }));
+              return (
+                <div
+                  key={i}
+                  className={cn(
+                    "bg-admin-bg flex flex-col gap-2 rounded-[12px] border p-3",
+                    err ? RED : "border-admin-line",
+                  )}
+                >
+                  <span className="flex items-center justify-between gap-2">
+                    <label htmlFor={`ce-q-${i}`} className="text-[14px] font-semibold">
+                      Question {i + 1}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setV((x) => ({ ...x, faqs: x.faqs.filter((_, j) => j !== i) }))
+                      }
+                      className="text-admin-muted inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-[14px] hover:text-[#b42318]"
+                      aria-label={`Remove question ${i + 1}`}
+                    >
+                      <Icon name="trash" size={14} />
+                      Remove
+                    </button>
+                  </span>
+                  <input
+                    id={`ce-q-${i}`}
+                    value={faq.question}
+                    placeholder="e.g. How do I brew wild thyme tea?"
+                    onChange={(e) => update({ question: e.target.value })}
+                    className={fieldStyles.input}
+                  />
+                  <textarea
+                    aria-label={`Answer ${i + 1}`}
+                    value={faq.answer}
+                    placeholder="Answer"
+                    onChange={(e) => update({ answer: e.target.value })}
+                    className={cn(fieldStyles.textarea, "min-h-[84px]")}
+                  />
+                  {err ? (
+                    <span role="alert" className="text-[14px] text-[#b42318]">
+                      {err}
+                    </span>
+                  ) : null}
+                </div>
+              );
+            })}
+            {v.faqs.length < MAX_FAQS ? (
+              <button
+                type="button"
+                onClick={() =>
+                  setV((x) => ({ ...x, faqs: [...x.faqs, { question: "", answer: "" }] }))
+                }
+                className="inline-flex cursor-pointer items-center gap-[6px] self-start border-0 bg-transparent p-0 text-[14px] font-semibold text-forest-600 hover:underline"
+              >
+                <Icon name="plus" size={16} />
+                Add question
+              </button>
+            ) : null}
+          </fieldset>
         </div>
         <div className="flex flex-col gap-[14px] border-t border-[#f0f0ee] pt-[14px]">
           <span className="text-[14px] font-bold">Search engine listing</span>

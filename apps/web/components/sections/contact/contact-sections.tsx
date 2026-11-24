@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { FloatingLeaf } from "@/components/decor/floating-leaf";
+import { FaqList } from "@/components/sections/faq-list";
 import { Eyebrow } from "@/components/sections/page-heading";
 import { contactContent } from "@/content/contact";
 import { images } from "@/lib/images";
@@ -130,10 +131,7 @@ export function ContactMain({ form }: { form: ReactNode }) {
   );
 }
 
-/**
- * FAQ accordion. Native <details name> gives one-open-at-a-time behaviour, keyboard support and
- * crawlable answers with no JavaScript; the first question starts open as in the mockup.
- */
+/** Contact page questions (accordion in <FaqList>). */
 export function ContactFaq() {
   const { faq } = contactContent;
   return (
@@ -154,29 +152,8 @@ export function ContactFaq() {
           </h2>
           <p className="m-0 text-[16px] leading-[1.6] text-[#4d4a40]">{faq.text}</p>
         </div>
-        <div className="flex flex-[2_1_560px] flex-col gap-[10px]">
-          {faq.items.map((item, index) => (
-            <details
-              key={item.question}
-              name="faq"
-              open={index === 0}
-              className="group overflow-hidden rounded-[16px] border border-[#e3d8bf] bg-white"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-[18px] text-[17px] leading-[1.5] font-bold text-[#0f2a1a] [&::-webkit-details-marker]:hidden">
-                <h3 className="m-0 text-[17px] font-bold">{item.question}</h3>
-                <span
-                  aria-hidden="true"
-                  className="inline-flex size-8 flex-none items-center justify-center rounded-full bg-[#efe7d6] text-[20px] leading-none text-ink group-open:bg-forest-600 group-open:text-white"
-                >
-                  <span className="group-open:hidden">+</span>
-                  <span className="hidden group-open:inline">−</span>
-                </span>
-              </summary>
-              <p className="m-0 px-5 pb-5 text-[16px] leading-[1.65] text-[#3f4a40]">
-                {item.answer}
-              </p>
-            </details>
-          ))}
+        <div className="flex-[2_1_560px]">
+          <FaqList items={faq.items} />
         </div>
       </div>
     </section>

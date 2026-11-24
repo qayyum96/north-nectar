@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { shopContent } from "@/content/shop";
 import { ProductCard } from "@/features/products/product-card";
+import { CategoryGuide } from "./category-guide";
 import { images } from "@/lib/images";
 import { categoryPath } from "@/lib/routes";
 import type { BreadcrumbItem } from "@/lib/seo/json-ld";
@@ -195,6 +196,8 @@ export function ListingPage({
           <ShopListing {...listingProps} />
         </Suspense>
       </section>
+
+      {activeCategory ? <CategoryGuide category={activeCategory} /> : null}
 
       <WholesaleBanner />
     </>

@@ -26,7 +26,26 @@ const schema = z.object({
     .nullable(),
   metaTitle: z.string().trim().max(120),
   metaDescription: z.string().trim().max(320),
+  /** Page text; paragraphs are separated by a blank line. */
+  content: z.string().max(8000, "Keep the page text under 8,000 characters"),
+  faqs: z
+    .array(
+      z.object({
+        question: z.string().trim().max(200, "Keep questions under 200 characters"),
+        answer: z.string().trim().max(1500, "Keep answers under 1,500 characters"),
+      }),
+    )
+    .max(12, "Up to 12 questions"),
 });
+
+/** "Para one\n\nPara two" -> ["Para one", "Para two"] (single line breaks stay inside a paragraph). */
+function paragraphs(text: string): string[] {
+  return text
+    .replace(/\r\n/g, "\n")
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
 
 export type CategoryInput = z.input<typeof schema>;
 export type CategoryResult =
@@ -48,6 +67,14 @@ export async function saveCategory(input: CategoryInput): Promise<CategoryResult
     return { ok: false, error: "Please check the highlighted fields.", fields };
   }
   const v = parsed.data;
+  const incomplete = v.faqs.findIndex((f) => !f.question !== !f.answer);
+  if (incomplete >= 0) {
+    return {
+      ok: false,
+      error: "Each question needs an answer (or remove it).",
+      fields: { [`faqs.${incomplete}`]: "Add both the question and the answer" },
+    };
+  }
   const supabase = await createClient();
   const { data: clash } = await supabase
     .from("categories")
@@ -81,6 +108,8 @@ export async function saveCategory(input: CategoryInput): Promise<CategoryResult
     description: v.description,
     image: v.image ? { ...v.image, alt: v.image.alt || v.name } : null,
     seo,
+    content: paragraphs(v.content),
+    faqs: v.faqs.filter((f) => f.question && f.answer),
   };
   const { error } = v.isNew
     ? await supabase.from("categories").insert({ id: v.id, status: "active", ...row })

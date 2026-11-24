@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { Icon } from "@/components/icon";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import { useToast } from "@/components/toast";
 import {
   Card,
@@ -59,99 +60,6 @@ function Label({
       </label>
       {right}
     </span>
-  );
-}
-
-/* ---------------------------------------------------------------------------------------------
- * Description with the mockup's toolbar (B, I, U, List, Link)
- * ------------------------------------------------------------------------------------------- */
-
-function DescriptionEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const ref = useRef<HTMLTextAreaElement>(null);
-
-  const wrap = (before: string, after = before, placeholder = "text") => {
-    const el = ref.current;
-    if (!el) return;
-    const { selectionStart: s, selectionEnd: e } = el;
-    const picked = value.slice(s, e) || placeholder;
-    const next = value.slice(0, s) + before + picked + after + value.slice(e);
-    onChange(next);
-    requestAnimationFrame(() => {
-      el.focus();
-      el.setSelectionRange(s + before.length, s + before.length + picked.length);
-    });
-  };
-
-  const list = () => {
-    const el = ref.current;
-    if (!el) return;
-    const start = value.lastIndexOf("\n", el.selectionStart - 1) + 1;
-    const endIdx = value.indexOf("\n", el.selectionEnd);
-    const end = endIdx === -1 ? value.length : endIdx;
-    const block = value
-      .slice(start, end)
-      .split("\n")
-      .map((l) => (l.startsWith("- ") ? l : `- ${l}`))
-      .join("\n");
-    onChange(value.slice(0, start) + block + value.slice(end));
-    requestAnimationFrame(() => el.focus());
-  };
-
-  const link = () => {
-    const url = window.prompt("Link address (https://…)", "https://");
-    if (!url || !/^(https?:\/\/|mailto:|\/)/i.test(url)) return;
-    wrap("[", `](${url})`, "link text");
-  };
-
-  const tool =
-    "min-h-7 min-w-7 cursor-pointer rounded-[6px] border-0 bg-transparent px-2 py-1 text-[14px] hover:bg-[#ececea]";
-  return (
-    <div className="overflow-hidden rounded-[10px] border border-[#d4d4d1] focus-within:border-forest-600">
-      <div
-        className="flex gap-[2px] border-b border-[#ececea] bg-[#fafaf8] px-2 py-[6px]"
-        role="toolbar"
-        aria-label="Formatting"
-      >
-        <button
-          type="button"
-          className={cn(tool, "font-bold")}
-          onClick={() => wrap("**")}
-          aria-label="Bold"
-        >
-          B
-        </button>
-        <button
-          type="button"
-          className={cn(tool, "italic")}
-          onClick={() => wrap("*")}
-          aria-label="Italic"
-        >
-          I
-        </button>
-        <button
-          type="button"
-          className={cn(tool, "underline")}
-          onClick={() => wrap("__")}
-          aria-label="Underline"
-        >
-          U
-        </button>
-        <button type="button" className={cn(tool, "text-admin-muted")} onClick={list}>
-          • List
-        </button>
-        <button type="button" className={cn(tool, "text-admin-muted")} onClick={link}>
-          Link
-        </button>
-      </div>
-      <textarea
-        ref={ref}
-        id="pe-description"
-        aria-label="Description"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="box-border block min-h-[120px] w-full resize-y border-0 p-3 text-[14px] leading-[1.6] outline-none"
-      />
-    </div>
   );
 }
 
@@ -921,7 +829,9 @@ export function ProductEditor({
                 </div>
                 <div className="flex flex-col gap-[6px]">
                   <Label htmlFor="pe-description">Description</Label>
-                  <DescriptionEditor
+                  <RichTextEditor
+                    id="pe-description"
+                    label="Description"
                     value={form.description}
                     onChange={(description) => set({ description })}
                   />

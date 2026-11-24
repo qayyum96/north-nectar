@@ -61,6 +61,9 @@ export interface CategoryRow {
   sort_order: number;
   status: "active" | "draft";
   seo: { title?: string; description?: string } | null;
+  /** Page text below the products, one string per paragraph (20261126000100_category_content). */
+  content?: string[] | null;
+  faqs?: { question: string; answer: string }[] | null;
 }
 
 export const PRODUCT_COLUMNS = "*, variants:product_variants(*)";

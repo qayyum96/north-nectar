@@ -101,6 +101,8 @@ export default async function CategoriesPage({
                       image: current.image?.src ? current.image : null,
                       metaTitle: current.seo?.title ?? "",
                       metaDescription: current.seo?.description ?? "",
+                      content: (current.content ?? []).join("\n\n"),
+                      faqs: current.faqs ?? [],
                       products: counts.get(current.id) ?? 0,
                     }
                   : {
@@ -112,6 +114,8 @@ export default async function CategoriesPage({
                       image: null,
                       metaTitle: "",
                       metaDescription: "",
+                      content: "",
+                      faqs: [],
                       products: 0,
                     }
               }

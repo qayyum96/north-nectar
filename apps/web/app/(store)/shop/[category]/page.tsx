@@ -1,8 +1,11 @@
+import { plainText } from "@northnectar/ui";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/seo/json-ld";
 import { ListingPage } from "@/features/products/listing/listing-page";
 import { catalog } from "@/lib/catalog";
 import { categoryPath } from "@/lib/routes";
+import { faqJsonLd } from "@/lib/seo/json-ld";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 /** Pre-built for every active category; new categories render on first visit; refreshed hourly. */
@@ -40,19 +43,28 @@ export default async function CategoryPage({ params }: Props) {
     catalog.getProducts(),
   ]);
 
+  const faqs = category.faqs ?? [];
+
   return (
-    <ListingPage
-      title={category.name}
-      intro={category.description}
-      breadcrumbs={[
-        { name: "Shop", path: "/shop" },
-        { name: category.name, path: categoryPath(category.slug) },
-      ]}
-      products={products}
-      categories={categories}
-      counts={counts}
-      total={all.length}
-      activeCategory={category}
-    />
+    <>
+      {faqs.length > 0 ? (
+        <JsonLd
+          data={faqJsonLd(faqs.map((f) => ({ question: f.question, answer: plainText(f.answer) })))}
+        />
+      ) : null}
+      <ListingPage
+        title={category.name}
+        intro={category.description}
+        breadcrumbs={[
+          { name: "Shop", path: "/shop" },
+          { name: category.name, path: categoryPath(category.slug) },
+        ]}
+        products={products}
+        categories={categories}
+        counts={counts}
+        total={all.length}
+        activeCategory={category}
+      />
+    </>
   );
 }

@@ -12,6 +12,9 @@ export interface CategoryRow {
   sort_order: number;
   status: "active" | "draft";
   seo: Record<string, unknown> | null;
+  /** Added in 20261126000100_category_content.sql; absent until that migration is applied. */
+  content?: string[] | null;
+  faqs?: unknown;
   created_at: string;
   updated_at: string;
 }

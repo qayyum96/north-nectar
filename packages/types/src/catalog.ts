@@ -11,6 +11,15 @@ export interface Category {
   sortOrder: number;
   status: PublishStatus;
   seo?: SeoOverrides;
+  /** Longer page text shown below the products, one string per paragraph (rich-text marks allowed). */
+  content?: string[];
+  /** Common questions shown on the category page (and as FAQPage structured data). */
+  faqs?: CategoryFaq[];
+}
+
+export interface CategoryFaq {
+  question: string;
+  answer: string;
 }
 
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";

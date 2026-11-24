@@ -1,4 +1,10 @@
-import type { Category, ImageAsset, Product, ProductVariant } from "@northnectar/types";
+import type {
+  Category,
+  CategoryFaq,
+  ImageAsset,
+  Product,
+  ProductVariant,
+} from "@northnectar/types";
 import type { CategoryRow, ProductRow, VariantRow } from "./rows";
 
 /** Database rows → domain types used by the website (and the admin). */
@@ -19,7 +25,21 @@ export function toCategory(row: CategoryRow): Category {
     sortOrder: row.sort_order,
     status: row.status,
     ...(row.seo ? { seo: row.seo as Category["seo"] } : {}),
+    content: (row.content ?? []).filter((p) => p.trim().length > 0),
+    faqs: toFaqs(row.faqs),
   };
+}
+
+/** Keeps only well-formed { question, answer } pairs from the jsonb column. */
+function toFaqs(value: unknown): CategoryFaq[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    const q = (item as { question?: unknown })?.question;
+    const a = (item as { answer?: unknown })?.answer;
+    return typeof q === "string" && typeof a === "string" && q.trim() && a.trim()
+      ? [{ question: q.trim(), answer: a.trim() }]
+      : [];
+  });
 }
 
 /**
