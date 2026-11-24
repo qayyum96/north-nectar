@@ -1,4 +1,5 @@
 import type { Product } from "@northnectar/types";
+import { BlogTeaser } from "@/components/sections/home/blog-teaser";
 import { CategoryCircles } from "@/components/sections/home/category-circles";
 import { HomeHero } from "@/components/sections/home/hero";
 import { Marquee } from "@/components/sections/home/marquee";
@@ -11,6 +12,7 @@ import { StoryShowcase } from "@/components/sections/home/story-showcase";
 import { ValleyBanner } from "@/components/sections/home/valley-banner";
 import { WholesaleBand } from "@/components/sections/home/wholesale-band";
 import { homeContent } from "@/content/home";
+import { getPosts } from "@/lib/blog";
 import { catalog } from "@/lib/catalog";
 import { showPlaceholderContent } from "@/lib/env";
 import { siteConfig } from "@/lib/seo/config";
@@ -71,10 +73,11 @@ function bestSellerTabs(
 const sentenceCase = (text: string) => text.charAt(0) + text.slice(1).toLowerCase();
 
 export default async function HomePage() {
-  const [products, categories, newArrivals] = await Promise.all([
+  const [products, categories, newArrivals, posts] = await Promise.all([
     catalog.getProducts({ sort: "best-selling" }),
     catalog.getCategories(),
     catalog.getNewArrivals(),
+    getPosts(),
   ]);
   const bySlug = (slug: string) => products.find((p) => p.slug === slug) ?? null;
 
@@ -127,6 +130,12 @@ export default async function HomePage() {
       />
       <OriginSplit />
       <Reviews visible={reviewsVisible} />
+      <BlogTeaser
+        posts={posts}
+        photoFor={(post) =>
+          post.relatedProducts.map((s) => bySlug(s)?.images[0]).find(Boolean) ?? null
+        }
+      />
       <WholesaleBand />
       <ValleyBanner />
     </>
