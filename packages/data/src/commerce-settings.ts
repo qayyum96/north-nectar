@@ -69,7 +69,7 @@ export const DEFAULT_COMMERCE_SETTINGS: CommerceSettings = {
       provinces: [],
       isFallback: true,
       rate: 250,
-      freeOver: 5000,
+      freeOver: 10000,
       daysMin: 3,
       daysMax: 5,
       courier: "",

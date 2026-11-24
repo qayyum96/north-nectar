@@ -75,7 +75,7 @@ export const deliveryMethods: DeliveryMethod[] = [
 
 export const commerceConfig = {
   currency: "PKR",
-  freeDeliveryThreshold: 5000,
+  freeDeliveryThreshold: 10000,
   maxQuantityPerLine: 20,
   lowStockThreshold: 5,
   paymentMethods,

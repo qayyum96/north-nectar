@@ -112,7 +112,7 @@ export const aboutContent = {
   },
 };
 
-/** "Cash on delivery across Pakistan. Free delivery over Rs 5,000." from the live settings. */
+/** "Cash on delivery across Pakistan. Free delivery over Rs 10,000." from the live settings. */
 export function aboutCtaText(settings: CommerceSettings): string {
   const f = deliveryFacts(settings);
   return [
