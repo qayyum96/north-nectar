@@ -11,8 +11,8 @@ export const refundPolicy: PolicyDocument = {
   title: "Refund and Return Policy",
   shortTitle: "Refund and return policy",
   metaDescription: `North Nectar returns and refunds: unopened products within ${days} days, and damaged or wrong items replaced or refunded. Refunds by bank transfer, JazzCash or Easypaisa.`,
-  status: "draft",
-  lastUpdated: "2026-11-20",
+  status: "final",
+  lastUpdated: "2026-11-24",
   intro:
     "We want you to be happy with every pouch. Because our products are natural foods and herbs, we handle returns carefully to keep everyone's orders safe and hygienic.",
   sections: [

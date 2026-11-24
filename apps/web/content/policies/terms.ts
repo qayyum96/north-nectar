@@ -10,8 +10,8 @@ export const termsAndConditions: PolicyDocument = {
   shortTitle: "Terms and conditions",
   metaDescription:
     "The terms that apply when you use the North Nectar website and buy our natural Himalayan products.",
-  status: "draft",
-  lastUpdated: "2026-11-20",
+  status: "final",
+  lastUpdated: "2026-11-24",
   intro: `These terms apply when you use ${siteConfig.domain} and buy from ${siteConfig.name}. By placing an order you agree to them, so please read them carefully.`,
   sections: [
     {

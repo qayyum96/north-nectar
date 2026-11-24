@@ -20,8 +20,8 @@ export function shippingPolicyFor(settings: CommerceSettings): PolicyDocument {
     title: "Shipping Policy",
     shortTitle: "Shipping policy",
     metaDescription: `How North Nectar delivers across Pakistan: delivery times, charges${freeOver ? `, free delivery over ${freeOver}` : ""}, cash on delivery and order tracking.`,
-    status: "draft",
-    lastUpdated: "2026-11-20",
+    status: "final",
+    lastUpdated: "2026-11-24",
     intro: `We pack every order at our unit in ${address.district}, Gilgit-Baltistan, and deliver to all cities and most towns in Pakistan through trusted courier partners.`,
     sections: [
       {
@@ -89,7 +89,7 @@ export function shippingPolicyFor(settings: CommerceSettings): PolicyDocument {
       {
         heading: "Contact",
         paragraphs: [
-          `Questions about delivery? Call or WhatsApp ${contact.phoneDisplay} or email ${contact.email}. We reply ${contact.hours.toLowerCase()}.`,
+          `Questions about delivery? Call or WhatsApp ${contact.phoneDisplay} or email ${contact.email}. We reply ${contact.hours}.`,
         ],
       },
     ],

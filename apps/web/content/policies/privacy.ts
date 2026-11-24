@@ -10,8 +10,8 @@ export const privacyPolicy: PolicyDocument = {
   shortTitle: "Privacy policy",
   metaDescription:
     "How North Nectar collects, uses and protects your personal information when you shop with us or contact us.",
-  status: "draft",
-  lastUpdated: "2026-11-20",
+  status: "final",
+  lastUpdated: "2026-11-24",
   intro: `This policy explains what personal information ${siteConfig.name} ("we") collects when you visit ${siteConfig.domain}, place an order or contact us, and how we use and protect it.`,
   sections: [
     {
