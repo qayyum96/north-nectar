@@ -9,6 +9,8 @@
  */
 
 export interface LegacyTarget {
+  /** Blog post slug (/blog/<slug>), used when that post is published. */
+  post?: string;
   /** New product slug (/products/<slug>). */
   product?: string;
   /** New category slug (/shop/<slug>), also the fallback for a product that is not live. */
@@ -45,12 +47,27 @@ export const LEGACY_CATEGORIES: Record<string, LegacyTarget> = {
   wholesale: { category: "wholesale" },
 };
 
-/** Old blog posts (/<slug>/), sent to the matching category until the articles are republished. */
+/**
+ * Old blog posts (/<slug>/): sent to the republished article at /blog/<same slug> once it is live
+ * in the admin, and to the matching category until then.
+ */
 export const LEGACY_POSTS: Record<string, LegacyTarget> = {
-  "himalayan-herbal-roots-for-natural-daily-wellness": { category: "herbal-roots" },
-  "why-himalayan-dry-fruits-are-daily-essentials": { category: "dry-fruits" },
-  "why-pure-himalayan-honey-beats-commercial-honey": { category: "pure-honey" },
-  "why-cold-pressed-oils-are-healthier-than-refined": { category: "natural-oils" },
+  "himalayan-herbal-roots-for-natural-daily-wellness": {
+    post: "himalayan-herbal-roots-for-natural-daily-wellness",
+    category: "herbal-roots",
+  },
+  "why-himalayan-dry-fruits-are-daily-essentials": {
+    post: "why-himalayan-dry-fruits-are-daily-essentials",
+    category: "dry-fruits",
+  },
+  "why-pure-himalayan-honey-beats-commercial-honey": {
+    post: "why-pure-himalayan-honey-beats-commercial-honey",
+    category: "pure-honey",
+  },
+  "why-cold-pressed-oils-are-healthier-than-refined": {
+    post: "why-cold-pressed-oils-are-healthier-than-refined",
+    category: "natural-oils",
+  },
 };
 
 /** Old standalone pages (/<slug>/) whose address changed. */

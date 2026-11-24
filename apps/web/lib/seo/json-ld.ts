@@ -1,6 +1,7 @@
 import type { Category, Product, ProductVariant } from "@northnectar/types";
 import { plainText } from "@northnectar/ui";
 import type {
+  BlogPosting,
   BreadcrumbList,
   FAQPage,
   ItemAvailability,
@@ -16,7 +17,7 @@ import type {
   WithContext,
 } from "schema-dts";
 import { commerceConfig } from "@/lib/constants/commerce";
-import { productPath } from "@/lib/routes";
+import { postPath, productPath } from "@/lib/routes";
 import { absoluteUrl, activeSocialLinks, siteConfig } from "./config";
 
 /*
@@ -293,6 +294,34 @@ export function productJsonLd(
       image: imagesAbs[0],
       offers: variantOffer(product, variant, shipping),
     })),
+  };
+}
+
+/** A blog article (BlogPosting), published by the North Nectar organization. */
+export function blogPostingJsonLd(post: {
+  slug: string;
+  title: string;
+  excerpt: string;
+  coverImage: { src: string } | null;
+  author: string;
+  publishedAt: string;
+  updatedAt: string;
+}): WithContext<BlogPosting> {
+  const url = absoluteUrl(postPath(post.slug));
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "@id": `${url}#article`,
+    mainEntityOfPage: url,
+    url,
+    headline: post.title,
+    ...(post.excerpt ? { description: post.excerpt } : {}),
+    image: absoluteUrl(post.coverImage?.src ?? "/opengraph-image"),
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt > post.publishedAt ? post.updatedAt : post.publishedAt,
+    author: { "@type": "Organization", name: post.author || siteConfig.name, url: siteConfig.url },
+    publisher: { "@id": ORG_ID },
+    inLanguage: siteConfig.locale,
   };
 }
 

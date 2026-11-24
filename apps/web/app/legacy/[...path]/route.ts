@@ -1,5 +1,6 @@
+import { getPostBySlug } from "@/lib/blog";
 import { catalog } from "@/lib/catalog";
-import { categoryPath, productPath } from "@/lib/routes";
+import { categoryPath, postPath, productPath } from "@/lib/routes";
 import { absoluteUrl } from "@/lib/seo/config";
 import { legacyTarget } from "@/lib/seo/legacy-redirects";
 
@@ -14,7 +15,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pat
 
   let to = target.path ?? "/shop";
   if (!target.path) {
-    if (target.product && (await catalog.getProductBySlug(target.product))) {
+    if (target.post && (await getPostBySlug(target.post))) {
+      to = postPath(target.post);
+    } else if (target.product && (await catalog.getProductBySlug(target.product))) {
       to = productPath(target.product);
     } else if (target.category && (await catalog.getCategoryBySlug(target.category))) {
       to = categoryPath(target.category);

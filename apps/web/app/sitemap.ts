@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { policies } from "@/content/policies";
+import { getPosts } from "@/lib/blog";
 import { catalog } from "@/lib/catalog";
-import { categoryPath, productPath } from "@/lib/routes";
+import { categoryPath, postPath, productPath } from "@/lib/routes";
 import { absoluteUrl } from "@/lib/seo/config";
 import { languageAlternates } from "@/lib/seo/metadata";
 
@@ -30,9 +31,10 @@ function entry(
  * are listed (the repository never returns drafts in production).
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [categories, products] = await Promise.all([
+  const [categories, products, posts] = await Promise.all([
     catalog.getCategories(),
     catalog.getProducts({ sort: "best-selling" }),
+    getPosts(),
   ]);
 
   const latest = products.reduce<string | undefined>(
@@ -58,6 +60,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       entry(productPath(p.slug), 0.8, "weekly", {
         lastModified: p.updatedAt,
         images: p.images.map((img) => absoluteUrl(img.src)),
+      }),
+    ),
+    // The blog index joins once it has articles (an empty index is noindex).
+    ...(posts.length > 0
+      ? [entry("/blog", 0.6, "weekly", { lastModified: posts[0]!.updatedAt })]
+      : []),
+    ...posts.map((p) =>
+      entry(postPath(p.slug), 0.6, "monthly", {
+        lastModified: p.updatedAt > p.publishedAt ? p.updatedAt : p.publishedAt,
+        ...(p.coverImage ? { images: [absoluteUrl(p.coverImage.src)] } : {}),
       }),
     ),
     entry("/about", 0.6, "monthly"),

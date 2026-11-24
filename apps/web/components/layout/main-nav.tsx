@@ -11,6 +11,7 @@ function activeKey(pathname: string): PrimaryNavKey | null {
   if (pathname === "/") return "home";
   if (pathname.startsWith("/shop") || pathname.startsWith("/products")) return "shop";
   if (pathname.startsWith("/about")) return "about";
+  if (pathname.startsWith("/blog")) return "blog";
   if (pathname.startsWith("/contact")) return "contact";
   return null;
 }

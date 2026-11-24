@@ -14,16 +14,20 @@ export interface NavGroup {
   links: NavLink[];
 }
 
-export type PrimaryNavKey = "home" | "shop" | "about" | "contact";
+export type PrimaryNavKey = "home" | "shop" | "about" | "blog" | "contact";
 
 export const primaryNav: (NavLink & { key: PrimaryNavKey })[] = [
   { key: "home", label: "Home", href: "/" },
   { key: "shop", label: "Shop", href: "/shop" },
   { key: "about", label: "Our story", href: "/about" },
+  { key: "blog", label: "Blog", href: "/blog" },
   { key: "contact", label: "Contact", href: "/contact" },
 ];
 
 export const categoryPath = (slug: string) => `/shop/${slug}`;
+
+/** Blog article URL. */
+export const postPath = (slug: string) => `/blog/${slug}`;
 
 /** Product page URL, optionally preselecting a size (`?size=250g`). */
 export const productPath = (slug: string, sizeLabel?: string) =>
@@ -50,5 +54,6 @@ export const footerLegalLinks: NavLink[] = [
 export const footerCompanyLinks: NavLink[] = [
   { label: "Our story", href: "/about" },
   { label: "How we source", href: "/about#how-we-source" },
+  { label: "Blog and guides", href: "/blog" },
   { label: "Wholesale and export", href: wholesaleEnquiryPath() },
 ];

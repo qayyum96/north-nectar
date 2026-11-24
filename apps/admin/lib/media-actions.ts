@@ -3,7 +3,7 @@
 import { requireStaff } from "@/lib/auth";
 import { putMedia } from "@/lib/media";
 
-const FOLDER = /^(products|categories)\/[A-Za-z0-9_-]{1,80}$/;
+const FOLDER = /^(products|categories|posts)\/[A-Za-z0-9_-]{1,80}$/;
 const MAX_BYTES = 1024 * 1024; // 1 MB, same as the browser step (lib/image-upload.ts)
 
 /**

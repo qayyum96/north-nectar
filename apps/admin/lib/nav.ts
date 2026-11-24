@@ -75,6 +75,7 @@ export const NAV: NavGroup[] = [
     label: "Website",
     items: [
       { label: "Messages", href: "/messages", icon: "messages", badge: "messages", phase: 2 },
+      { label: "Blog", href: "/blog", icon: "file", roles: ["owner", "manager"], phase: 6 },
     ],
   },
   {

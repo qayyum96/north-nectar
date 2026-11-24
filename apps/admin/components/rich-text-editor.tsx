@@ -6,7 +6,8 @@ import { useRef } from "react";
 /**
  * Plain textarea with the mockup's formatting toolbar (B, I, U, List, Link). It writes the marks the
  * storefront's <RichParagraph> understands: **bold**, *italic*, __underline__, "- " list lines and
- * [link text](https://… or /path). Paragraphs are separated by a blank line.
+ * [link text](https://… or /path). Paragraphs are separated by a blank line. With `headings`, an
+ * "H" button starts the current line with "## " (a section heading on blog articles).
  */
 export function RichTextEditor({
   id,
@@ -15,6 +16,7 @@ export function RichTextEditor({
   onChange,
   minHeight = 120,
   invalid = false,
+  headings = false,
 }: {
   id: string;
   label: string;
@@ -22,6 +24,7 @@ export function RichTextEditor({
   onChange: (v: string) => void;
   minHeight?: number;
   invalid?: boolean;
+  headings?: boolean;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
 
@@ -51,6 +54,21 @@ export function RichTextEditor({
       .join("\n");
     onChange(value.slice(0, start) + block + value.slice(end));
     requestAnimationFrame(() => el.focus());
+  };
+
+  const heading = () => {
+    const el = ref.current;
+    if (!el) return;
+    const start = value.lastIndexOf("\n", el.selectionStart - 1) + 1;
+    const line = value.slice(start).split("\n")[0] ?? "";
+    const bare = line.replace(/^#{1,3}\s*/, "");
+    const next = value.slice(0, start) + "## " + bare + value.slice(start + line.length);
+    onChange(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      const end = start + 3 + bare.length;
+      el.setSelectionRange(end, end);
+    });
   };
 
   const link = () => {
@@ -97,6 +115,17 @@ export function RichTextEditor({
         >
           U
         </button>
+        {headings ? (
+          <button
+            type="button"
+            className={cn(tool, "text-admin-muted font-bold")}
+            onClick={heading}
+            aria-label="Heading"
+            title="Section heading"
+          >
+            H
+          </button>
+        ) : null}
         <button type="button" className={cn(tool, "text-admin-muted")} onClick={list}>
           • List
         </button>
