@@ -112,12 +112,16 @@ export const aboutContent = {
   },
 };
 
-/** "Cash on delivery across Pakistan. Free delivery over Rs 10,000." from the live settings. */
+/** "Cash on delivery across Pakistan. Free delivery over Rs 5,000." from the live settings. */
 export function aboutCtaText(settings: CommerceSettings): string {
   const f = deliveryFacts(settings);
   return [
     f.cod ? "Cash on delivery across Pakistan." : "Delivered across Pakistan.",
-    f.freeOver !== null ? `Free delivery over ${formatPkr(f.freeOver)}.` : "",
+    f.freeOver === null
+      ? ""
+      : f.freeOverVaries
+        ? `Free delivery from ${formatPkr(f.freeOver)}, depending on your city.`
+        : `Free delivery over ${formatPkr(f.freeOver)}.`,
   ]
     .filter(Boolean)
     .join(" ");

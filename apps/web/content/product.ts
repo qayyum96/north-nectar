@@ -31,7 +31,13 @@ export function productDelivery(settings: CommerceSettings) {
       : null,
     { icon: "truck", strong: `Delivered in ${f.days}`, text: "to every city" },
     f.freeOver !== null
-      ? { icon: "gift", strong: "Free delivery", text: `on orders over ${formatPkr(f.freeOver)}` }
+      ? {
+          icon: "gift",
+          strong: "Free delivery",
+          text: f.freeOverVaries
+            ? `from ${formatPkr(f.freeOver)}, depending on your city`
+            : `on orders over ${formatPkr(f.freeOver)}`,
+        }
       : null,
   ].filter(
     (r): r is { icon: "banknote" | "truck" | "gift"; strong: string; text: string } => r !== null,
@@ -50,7 +56,7 @@ export function productShippingReturns(settings: CommerceSettings) {
       : null,
     {
       title: "Delivery",
-      text: `${f.days}. ${rateText(f)}${f.freeOver !== null ? `, or free on orders over ${formatPkr(f.freeOver)}` : ""}.`,
+      text: `${f.days}. ${rateText(f)}${f.freeOver === null ? "" : f.freeOverVaries ? `, or free from ${formatPkr(f.freeOver)} depending on your city` : `, or free on orders over ${formatPkr(f.freeOver)}`}.`,
     },
     {
       title: "Easy returns",

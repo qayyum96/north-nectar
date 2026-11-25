@@ -281,7 +281,10 @@ export function deliveryFacts(settings: CommerceSettings) {
     minDays,
     maxDays,
     days: days(minDays, maxDays),
+    /** Lowest free-delivery amount (null = never free). */
     freeOver: freeDeliveryThreshold(settings),
+    /** True when zones have different free-delivery amounts (copy then says "depending on your city"). */
+    freeOverVaries: new Set(zones.map((z) => z.freeOver)).size > 1,
     zones: [...zones].sort((a, b) => Number(a.isFallback) - Number(b.isFallback)),
     express: settings.express,
     cod: isPaymentEnabled(settings, "cod"),

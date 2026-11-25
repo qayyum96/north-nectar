@@ -1,11 +1,12 @@
 "use client";
 
-import { freeDeliveryThreshold } from "@northnectar/data/commerce-settings";
 import { cn, formatPkr } from "@northnectar/ui";
-import { useCommerceSettings } from "./commerce-settings";
+import { useDeliveryZone } from "@/features/delivery/use-delivery-zone";
 
 /**
- * "You are Rs 951 away from free delivery" with a progress bar. `card` is the rounded box on the
+ * "You are Rs 951 away from free delivery to Islamabad" with a progress bar. Uses the visitor’s
+ * delivery city (top bar or checkout); until it is known, the lowest zone amount, marked as
+ * depending on the city. `card` is the rounded box on the
  * cart page; `bar` is the full-width strip under the drawer header.
  */
 export function FreeDeliveryProgress({
@@ -17,14 +18,18 @@ export function FreeDeliveryProgress({
   variant?: "card" | "bar";
   className?: string;
 }) {
-  const threshold = freeDeliveryThreshold(useCommerceSettings());
+  const { place, zone, freeOver: threshold } = useDeliveryZone();
   if (threshold === null) return null;
   const left = Math.max(0, threshold - subtotal);
   const pct = Math.min(100, Math.round((subtotal / threshold) * 100));
-  const message =
-    left > 0
-      ? `You are ${formatPkr(left)} away from free delivery`
-      : "You have unlocked free delivery";
+  const to = zone && place ? ` to ${place}` : "";
+  const message = !zone
+    ? left > 0
+      ? `Free delivery from ${formatPkr(threshold)}, depending on your city`
+      : "You may qualify for free delivery: choose your city at checkout"
+    : left > 0
+      ? `You are ${formatPkr(left)} away from free delivery${to}`
+      : `You have unlocked free delivery${to}`;
 
   return (
     <div

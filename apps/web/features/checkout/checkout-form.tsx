@@ -6,12 +6,13 @@ import { AlertCircleIcon, ChevronDownIcon, cn, formatPkr } from "@northnectar/ui
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type ReactNode } from "react";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { useForm, useWatch, type UseFormRegisterReturn } from "react-hook-form";
 import { CITIES, PROVINCES, checkoutContent } from "@/content/checkout";
 import { CartBagIcon } from "@/features/cart/cart-bag-icon";
 import { useCartStore } from "@/features/cart/store";
 import { useCartTotals } from "@/features/cart/use-cart-totals";
+import { useDeliveryLocation } from "@/features/delivery/location-store";
 import {
   deliveryOptions,
   enabledWallets,
@@ -84,6 +85,13 @@ export function CheckoutForm() {
     ],
   });
   const address = { city: city === "Other" ? cityOther : city, province };
+
+  // Remember the delivery city, so the top bar and cart show its free-delivery amount next time.
+  const chooseCity = useDeliveryLocation((s) => s.choose);
+  const chosenCity = address.city?.trim() ?? "";
+  useEffect(() => {
+    if (chosenCity) chooseCity(chosenCity, province || null);
+  }, [chosenCity, province, chooseCity]);
   const totals = useCartTotals(deliveryId, paymentId, address);
   const delivery = deliveryOptions(settings, {
     ...address,
